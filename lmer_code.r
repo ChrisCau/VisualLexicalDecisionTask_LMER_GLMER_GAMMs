@@ -1060,6 +1060,11 @@ summary (lmer.dat8.a)
 #nlen.z:poly(fsuf, 2)1      -1.103e+00  5.807e-01  6.440e+01  -1.899 0.061995 .  
 #nlen.z:poly(fsuf, 2)2       1.854e+00  6.155e-01  6.450e+01   3.012 0.003704 ** 
 
+#### Final interpretation of results:
+#	   
+# The main effect of SuffixAmbiguity is not statistically significant. Furthermore, the effects of NounLength and LemmaFrequency are statistically significant,
+# in the expected direction: NounLength is inhibitory, and LemmaFrequency is facilitatory. The effects of 	   
+	   
 # ------------------
 # -------------------------------- VIZUALIZATION OF FINAL RESULTS!
 # ------------------
