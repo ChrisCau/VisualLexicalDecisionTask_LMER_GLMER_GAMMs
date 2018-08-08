@@ -1,4 +1,4 @@
-# Loading the packages.
+# Loading packages.
 require(rms)
 require(lme4)
 require(languageR)
@@ -237,7 +237,7 @@ powerTransform(dat$RT)
 #   dat$RT 
 #-1.314563 
 
-# Note: the results suggest inverse transformation of RTs.
+# Note: The results suggest inverse transformation of RTs.
 
 # Following previous studies, I will use log transformation to transform the raw values of LemmaFrequency, SuffixFrequency, SuffixLength, NounLength, and SuffixProductivity.
 dat$flem=log(dat$LemmaFrequency)
@@ -256,7 +256,7 @@ plot(density(dat$RT))
 qqnorm(dat$RT)
 par(mfrow=c(1,1))
 
-# Note: this distribution is closer to normal.
+# Note: This distribution is closer to normal.
 
 # ------- Shapiro-Wilk & Kolmogorov-Smirnov after transformation of RTs (this step has been skipped earlier, because on the basis of VIP1 graphics I saw that distribution deviates exceptionally from normal [before transformation]).
 
@@ -503,7 +503,7 @@ anova(lmer.dat.a,lmer.dat1.a)
 #lmer.dat.a   5 504.21 531.20 -247.10   494.21                            
 #lmer.dat1.a  6 498.52 530.91 -243.26   486.52 7.6902      1   0.005552 **
 
-# Note: the second model is better, the one with POLY function of TrialOrder.
+# Note: The second model is better, the one with POLY function of TrialOrder.
 
 # ------------------------
 ################ Embbeding of other predictors in LMER model.
@@ -557,7 +557,7 @@ anova(lmer.dat5.a,lmer.dat6.a)
 #lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
 #lmer.dat6.a 11 453.04 512.42 -215.52   431.04 0.0877      1     0.7672
 
-# Note: the first model is better.
+# Note: The first model is better.
 
 # ------
 # I will check the interactions between some other predictors.
@@ -597,10 +597,10 @@ anova(lmer.dat5.a,lmer.dat6.a)
 #lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
 #lmer.dat6.a 11 452.11 511.49 -215.06   430.11 1.0101      1     0.3149
 
-# Note: the first model is better, again.
+# Note: The first model is better, again.
 
 # ------
-# I will check the interactions between some other predictors, again.
+# I will check the interactions between other predictors, again.
 lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + sprod.z + flem.z + nlen.z*SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat6)
 
@@ -637,7 +637,7 @@ anova(lmer.dat5.a,lmer.dat6.a)
 #lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
 #lmer.dat6.a 11 452.36 511.74 -215.18   430.36 0.7659      1     0.3815
 
-# Note: the first model is better, again.
+# Note: The first model is better, again.
 
 # ------
 # And again ...
@@ -677,10 +677,10 @@ anova(lmer.dat5.a,lmer.dat6.a)
 #lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
 #lmer.dat6.a 11 450.89 510.27 -214.45   428.89 2.2315      1     0.1352
 
-# Note: the second model is a bit better, but having in mind that this interaction is not stat.sig. we will continue with model 5. 
+# Note: The second model is a bit better, but having in mind the fact that this interaction is not stat.sig. (so, the advantage of this model is not interpretable) we will continue with LMER model 5. 
 
 # ------
-# I will check the interactions between some other predictors.
+# I will check the interactions between other predictors, last time.
 lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z*flem.z + sprod.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat7)
 
@@ -717,12 +717,12 @@ anova(lmer.dat5.a,lmer.dat7.a)
 #lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
 #lmer.dat7.a 11 452.85 512.23 -215.43   430.85 0.2735      1      0.601
 
-# Note: the first model is better. 
+# Note: The first model is better. 
 
 # Final note: lmer5 is the best model so far, but we will name it lmer6.
 
 # ----
-
+# The best model so far.
 lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat6)
 
@@ -782,7 +782,7 @@ lmer.dat7.a=update(lmer.dat7, REML=FALSE)
 
 anova(lmer.dat6.a,lmer.dat7.a)
 
-# Parameters are not consistent, so we will continue without poly, because we know that we have outlier value in LemmaFrequency, which deviate destiribution.
+# Parameters are not consistent, so we will continue without poly, because we know that we have outlier value in LemmaFrequency, which deviate destribution.
 
 # -----------------------------------------------
 # ---------------------------
@@ -963,7 +963,7 @@ summary (lmer.dat8)
 # ---------------------
 # ---------------------------
 
-# I will check interaction between the random segment and random slope adjustments of the predictors NounLength and TrialOrder for different Subjects.
+# I will check interaction between the random segment and random slope adjustments of the predictors NounLength and TrialOrder for different subjects.
 lmer.dat9 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat9)
 
@@ -1163,13 +1163,13 @@ summary (lmer.dat8.a)
 # ------------------
 # -------------------------------- VIZUALIZATION OF FINAL RESULTS!
 # ------------------
-
+# SuffixAmbiguity effect.
 g1<-ggplot(data=dat, aes(x=SuffixAmbiguity, y=RT)) + 
     geom_bar(stat="identity", fill="darkred", colour="darkred")
 g1
            
 # ------------
-           
+# NounLength effect.           
 g2<-ggplot(data=dat, aes(x=nlen.z, y=RT)) + 
   geom_point(shape=18, color="gray")+
   geom_smooth(method=lm,  linetype="solid",
@@ -1177,7 +1177,7 @@ g2<-ggplot(data=dat, aes(x=nlen.z, y=RT)) +
 g2
            
 # ------------
-           
+# LemmaFrequency effect.           
 g3<-ggplot(data=dat, aes(x=flem.z, y=RT)) + 
   geom_point(shape=18, color="gray")+
   geom_smooth(method=lm,  linetype="solid",
@@ -1185,7 +1185,7 @@ g3<-ggplot(data=dat, aes(x=flem.z, y=RT)) +
 g3
            
 # ------------
-           
+# SuffixProductivity effect.           
 g4<-ggplot(data=dat, aes(x=sprod.z, y=RT)) + 
   geom_point(shape=18, color="gray")+
   geom_smooth(method=lm,  linetype="solid",
