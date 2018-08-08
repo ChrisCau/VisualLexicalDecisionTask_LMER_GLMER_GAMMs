@@ -37,11 +37,11 @@ colnames(dat)
 
 # This part is almost the same as in the process of conducting LMER analysis, I will skip some parts.
 
-# I will skip soprting part, because I work now with different measure, so I need all true/false answers.
+# I will skip sorting part, because I work now with different measure (Accuracy), so I need all answers.
 
 # -----------------------------------------
 
-# Furtermore, I will not create subset, this parts of analysis is the same as in previous LMER analysis.
+# Furtermore, I will not create subset, this parts of analysis are the same as in previous LMER analysis.
 
 # ______
 # _______________________________________
@@ -186,5 +186,5 @@ summary (glmer.dat1)
 #flem.z                      1.36199    0.21073   6.463 1.03e-10 ***
 #SuffixAmbiguityunambiguous  0.08815    0.46009   0.192   0.8481
 
-################## Results fit with those from LMER analysis, except the LemmaFrequency effect, which is inhibitory in those analysis.
-# This analysis definitely is not important for our study, so we will use another (much powerfull analysis in other repository).
+################## Results fit with those from LMER analysis, except the LemmaFrequency effect, which is inhibitory in this analysis.
+# This analysis definitely is not important for our study, so we will use another (much powerfull analysis in other repository) -- GAMMs.
