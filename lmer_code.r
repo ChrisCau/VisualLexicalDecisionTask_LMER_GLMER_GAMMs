@@ -14,10 +14,10 @@ require(ggplot2)
 library(car)
 require(mgcv)
 
-# Loading the data set.
+# Loading dataset.
 dat=read.table("vld_final.txt",T)
 
-# Dimensions of the data set (number of rows [data], number of columns [variables]).
+# Dimensions of dataset (number of rows [data], number of columns [variables]).
 dim(dat)
 #[1] 2023   16
 
@@ -95,7 +95,7 @@ dat=dat[dat$TrialNumber!="129",]
 dat=dat[dat$TrialNumber!="96",]
 dat=dat[dat$TrialNumber!="130",]
 
-# Dimensions of the data set (number of rows [data], number of columns [variables]).
+# Dimensions of dataset (number of rows [data], number of columns [variables]).
 dim(dat)
 #[1] 1707   16
 
@@ -105,7 +105,7 @@ dim(dat)
 
 # -----------------------------------------
 
-# I have to examine in which covariates the ambiguous and unambiguous suffixes differe (e.g. Are ambiguous suffixes longer, or more frequent [stat.sign.]?!). I will create subset with 
+# I have to examine in which covariates the ambiguous and unambiguous suffixes differ (e.g. Are ambiguous suffixes longer, or more frequent [stat.sign.]?!). I will create subset with 
 # data of two participants from different experimental groups (because it would be too long to look at the whole sample, and also it is useless).
 
 datx=dat[dat$Subject=="s9" | dat$Subject=="s38",]
@@ -131,7 +131,7 @@ boxplot(NounLength~SuffixAmbiguity, data=datx)
 #         7.07        7.76
 #        41.00       33.00
 
-# Note: This effect is marginally statistically significant (p = 0.04). This results suggest that unambiguous suffixes are in general longer than ambiguous ones.
+# Note: This effect is marginally statistically significant (p = 0.04). This results suggest that unambiguous suffixes are in general longer than ambiguous.
 
 # -------------------------
 ##################### Lemma Frequency (taken from the corpus srWac)
@@ -150,7 +150,7 @@ boxplot(LemmaFrequency~SuffixAmbiguity, data=datx)
 #         10934        4375
 # rep        41          33
 
-# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differe in the frequency of lemmas.
+# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differ in the frequency of lemmas.
 
 # -------------------------
 ##################### Suffix frequency (taken from the database created by me and my colleagues)
@@ -169,7 +169,7 @@ boxplot(SuffixFrequency~SuffixAmbiguity, data=datx)
 #         4578        3925
 #rep        41          33
 
-# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differe in the suffix frequency.
+# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differ in the suffix frequency.
 
 # -------------------------
 ##################### Suffix length (in letters)
@@ -188,7 +188,7 @@ boxplot(SuffixLength~SuffixAmbiguity, data=datx)
 #         2.73        2.97
 #rep     41.00       33.00
 
-# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differe in the suffix length.
+# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differ in the suffix length.
 
 # -------------------------
 ##################### Suffix Productivity (taken from the database created by me and my colleagues)
@@ -207,7 +207,7 @@ boxplot(SuffixProductivity~SuffixAmbiguity, data=datx)
 #      377  197
 #      33   41
 
-# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differe in the suffix productivity.
+# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differ in the suffix productivity.
 # ______
 # _______________________________________
 # __________________________________________________________
@@ -680,7 +680,7 @@ anova(lmer.dat5.a,lmer.dat6.a)
 # Note: the second model is a bit better, but having in mind that this interaction is not stat.sig. we will continue with model 5. 
 
 # ------
-# I will check the interactions between some other predictors, the last one.
+# I will check the interactions between some other predictors.
 lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z*flem.z + sprod.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat7)
 
