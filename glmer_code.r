@@ -1,3 +1,4 @@
+# Loading packages.
 require(rms)
 require(lme4)
 require(languageR)
@@ -13,324 +14,177 @@ require(ggplot2)
 library(car)
 require(itsadug)
 
-dat=read.table("vldfinalno.txt",, sep="\t",header=TRUE)
+# Loading dataset.
+dat=read.table("vld_final.txt", sep="\t",header=TRUE)
 
+# Dimensions of the data set (number of rows [data], number of columns [variables]).
 dim(dat)
-#[1] 2023   18
+#[1] 2023   16
 
+# Column names.
 colnames(dat)
 
-# [1] "Ispitanik"            "TrialOrder"           "Grupa"               
-# [4] "CorrectResponse"      "TrialNumber"          "Sufiks"              
-# [7] "DuzinaSufiksa"        "Response"             "Tacnost"             
-#[10] "RT"                   "NV"                   "Stimulus"            
-#[13] "FrekLemKostic"        "PovFrekWac"           "FrekLemWac"          
-#[16] "DuzinaReci"           "FrekvencijaSufiksa"   "ProduktivnostSufiksa"
+# [1] "Subject"            "TrialOrder"         "Group"             
+# [4] "CorrectResponse"    "TrialNumber"        "Suffix"            
+# [7] "SuffixLength"       "Response"           "Accuracy"          
+# [10] "RT"                 "SuffixAmbiguity"    "Noun"              
+# [13] "LemmaFrequency"     "NounLength"         "SuffixFrequency"   
+# [16] "SuffixProductivity"
 
-_____________________________________________
-__________________________________________________________
+# ------------------
+# -------------------------------- PREPARING DATA FOR STATISTICAL ANALYSIS!
+# ------------------
 
-# Vizulena inspekcija podataka, grafik VIP1
+# This part is almost the same as in the process of conducting LMER analysis, I will skip some parts.
 
+# I will skip soprting part, because I work now with different measure, so I need all true/false answers.
+
+# -----------------------------------------
+
+# Furtermore, I will not create subset, this parts of analysis is the same as in previous LMER analysis.
+
+# ______
+# _______________________________________
+# __________________________________________________________
+
+# I will not delete errors, I am working with them.
+
+# Visual inspection of data (RTs).
 par(mfrow=c(2,2))
-plot(sort(dat$RT))
-plot(density(dat$RT))
-qqnorm(dat$RT)
+plot(sort(dat$Accuracy))
+plot(density(dat$Accuracy))
+qqnorm(dat$Accuracy)
 par(mfrow=c(1,1))
 
-powerTransform(dat$RT)
-#Estimated transformation parameters 
-#   dat$RT 
-#-1.314563  
+# I will not transform "Accuracy", because of binomial distribution.
 
-# Log frekvencija leme, frekvencija sufiksa, duzina sufiksa i duzina leme
+# Following previous studies, I will use log transformation to transform the raw values of LemmaFrequency, SuffixFrequency, SuffixLength, NounLength and SuffixProductivity.
+dat$flem=log(dat$LemmaFrequency)
+dat$nlen=log(dat$NounLength)
+dat$fsuf=log(dat$SuffixFrequency)
+dat$slen=log(dat$SuffixLength)
+dat$sprod=log(dat$SuffixProductivity)
 
-dat$dlem=log(dat$DuzinaReci)
-dat$flemk=log(dat$FrekLemKostic)
-dat$flemw=log(dat$FrekLemWac)
-dat$fpov=log(dat$PovFrekWac)
-dat$fsuf=log(dat$FrekvencijaSufiksa)
-dat$dsuf=log(dat$DuzinaSufiksa)
-dat$psuf=log(dat$ProduktivnostSufiksa)
-
-# Normalizujem kontinuirane prediktore 
-
+# Normalization of continuous precitors, to be comparable on the same scale.
 dat$trial.z = scale(dat$TrialOrder)
-dat$len.z = scale(dat$dlem)
-dat$flemk.z=scale(dat$flemk)
-dat$flemw.z=scale(dat$flemw)
-dat$fpov.z=scale(dat$fpov)
+dat$flem.z = scale(dat$flem)
+dat$nlen.z = scale(dat$nlen)
 dat$fsuf.z = scale(dat$fsuf)
-dat$dsuf.z = scale(dat$dsuf)
-dat$psuf.z = scale(dat$psuf)
+dat$slen.z = scale(dat$slen)
+dat$sprod.z = scale(dat$sprod)
 
-# Pobrinem se da je faktor tretiran kao faktor
+# Factor as factor (SuffixAmbiguity).
+as.factor(as.character(dat$SuffixAmbiguity))
+levels(dat$SuffixAmbiguity)
+table(dat$SuffixAmbiguity)
 
-as.factor(as.character(dat$NV))
-levels(dat$NV)
-table(dat$NV)
+#  ambiguous unambiguous 
+#       1012        1011 
 
-as.factor(as.character(dat$Ispitanik))
-levels(dat$Ispitanik)
-table(dat$Ispitanik)
+# Factor as factor (Subject).
+as.factor(as.character(dat$Subject))
+levels(dat$Subject)
+table(dat$Subject)
 
-as.factor(as.character(dat$Stimulus))
-levels(dat$Stimulus)
-table(dat$Stimulus)
-__________________________________________________________
-________________________________________________________________
+# Factor as factor (TrialNumber).
+as.factor(as.character(dat$TrialNumber))
+levels(dat$TrialNumber)
+table(dat$TrialNumber)
 
-#Kontinuirane prediktore -- da vidim kako vizuelno to sve izgleda
+# __________________________________________________________
+# ________________________________________________________________
 
--------------------------
-#Trial Order
--------------------------
+# I will skip this step (Visualization of continuous predictors), because it is the same as in LMER analysis.
 
-par(mfrow=c(2,2))
-plot(sort(dat$TrialOrder))
-plot(density(dat$TrialOrder))
-qqnorm(dat$TrialOrder)
-par(mfrow=c(1,1))
+# __________________________________________________________
+# ____________________________________________________________
 
--------------------------
-#Duzina Reci
--------------------------
+# Visual inspection of random effects.
 
-par(mfrow=c(2,2))
-plot(sort(dat$dlem))
-plot(density(dat$dlem))
-qqnorm(dat$dlem)
-par(mfrow=c(1,1))
+qqmath(~Accuracy|Subject,data=dat)
+qqmath(~Accuracy|TrialNumber,data=dat)
+xylowess.fnc (Accuracy~TrialOrder | Subject, data=dat, ylab= "Accuracy")
 
--------------------------
-#Frekvencija Leme (Kostic)
--------------------------
+# _________________________________________________________
+# ________________________________________________________________
 
-par(mfrow=c(2,2))
-plot(sort(dat$flemk))
-plot(density(dat$flemk))
-qqnorm(dat$flemk)
-par(mfrow=c(1,1))
-
--------------------------
-#Frekvencija Leme (srWac)
--------------------------
-
-par(mfrow=c(2,2))
-plot(sort(dat$flemw))
-plot(density(dat$flemw))
-qqnorm(dat$flemw)
-par(mfrow=c(1,1))
-
--------------------------
-#Frekvencija Reci (srWac)
--------------------------
-
-par(mfrow=c(2,2))
-plot(sort(dat$fpov))
-plot(density(dat$fpov))
-qqnorm(dat$fpov)
-par(mfrow=c(1,1))
-
--------------------------
-#Frekvencija Sufiksa 
--------------------------
-
-par(mfrow=c(2,2))
-plot(sort(dat$fsuf))
-plot(density(dat$fsuf))
-qqnorm(dat$fsuf)
-par(mfrow=c(1,1))
-
--------------------------
-#Duzina Sufiksa 
--------------------------
-
-par(mfrow=c(2,2))
-plot(sort(dat$dsuf))
-plot(density(dat$dsuf))
-qqnorm(dat$dsuf)
-par(mfrow=c(1,1))
-
--------------------------
-#Produktivnost Sufiksa 
--------------------------
-
-par(mfrow=c(2,2))
-plot(sort(dat$psuf))
-plot(density(dat$psuf))
-qqnorm(dat$psuf)
-par(mfrow=c(1,1))
-
-__________________________________________________________
-____________________________________________________________
-
-# Vizuelna inspekcija slucajnih efekata
-
-qqmath(~RT|Ispitanik,data=dat)
-
-qqmath(~RT|TrialNumber,data=dat)
-
-xylowess.fnc (RT~TrialOrder | Ispitanik, data=dat, ylab= "RT")
-____________________________________________________________
-____________________________________________________________
-
-table(dat$FrekvencijaSufiksa)
-
-   46    73    81    88    91   170   424   464   537   868   913  2140  2280 
-   21    41    21    23    24    38    43    24    46   217    24    92    68 
- 3001  3200  3764  3765  5345  6155  6585 23567 
-  181    40    91    24   173   129   224    89
-  _________________________________________________________
-________________________________________________________________
-
-# Kolinearnost medju prediktorima
-
-C=cov(dat[,c("RT", "flemk","flemw", "fpov", "fsuf", "dlem","dsuf", "psuf")], y = NULL, use = "everything", method = c("pearson", "kendall", "spearman"))
+# Colinearity between predictors.
+C=cov(dat[,c("flem","nlen","fsuf","slen","sprod")], y = NULL, use = "everything", method = c("pearson", "kendall", "spearman"))
 Cor=cov2cor(C)
 Cor
 
-#              RT       flemk        flemw        fpov       fsuf        dlem
-#RT     1.0000000 -0.25270268 -0.340134744 -0.33576441 -0.2088414  0.11718241
-#flemk -0.2527027  1.00000000  0.737172303  0.81199371  0.4640850 -0.05401538
-#flemw -0.3401347  0.73717230  1.000000000  0.92810403  0.5037532  0.02816801
-#fpov  -0.3357644  0.81199371  0.928104033  1.00000000  0.4884931  0.01208878
-#fsuf  -0.2088414  0.46408501  0.503753210  0.48849305  1.0000000 -0.16956594
-#dlem   0.1171824 -0.05401538  0.028168006  0.01208878 -0.1695659  1.00000000
-#dsuf   0.1101909 -0.06037767  0.008320418 -0.05125295 -0.3250745  0.64594653
-#psuf  -0.1763057  0.36969063  0.394772138  0.41680563  0.9190694 -0.11839922
-#              dsuf       psuf
-#RT     0.110190853 -0.1763057
-#flemk -0.060377670  0.3696906
-#flemw  0.008320418  0.3947721
-#fpov  -0.051252949  0.4168056
-#fsuf  -0.325074463  0.9190694
-#dlem   0.645946526 -0.1183992
-#dsuf   1.000000000 -0.3125367
-#psuf  -0.312536700  1.0000000
+#             flem        nlen       fsuf         slen      sprod
+#flem  1.000000000  0.02816801  0.5037532  0.008320418  0.3947721
+#nlen  0.028168006  1.00000000 -0.1695659  0.645946526 -0.1183992
+#fsuf  0.503753210 -0.16956594  1.0000000 -0.325074463  0.9190694
+#slen  0.008320418  0.64594653 -0.3250745  1.000000000 -0.3125367
+#sprod 0.394772138 -0.11839922  0.9190694 -0.312536700  1.0000000
 
-collin.fnc(dat[,c("flemk","flemw", "fpov", "fsuf", "dlem","dsuf", "psuf")])$cnumber
+collin.fnc(dat[,c("flem","nlen","fsuf","slen","sprod")])$cnumber
 
-#Naravno, prevelik zbog ovih frekvencija.
+# This value is too big!
+#45.08018
 
-collin.fnc(dat[,c("flemk","fsuf", "dlem")])$cnumber
-#28.65964
+# Reduced, but still too big! This suggest that GAMMs might be more appropriate analysis for this data (now, I am sure, it's even worse when looking at the situation with Accuracy measure).
+collin.fnc(dat[,c("flem","nlen","sprod")])$cnumber
+#30.29088
 
-_____________________________________________
-____________________________________________________________
+# Note: I exscluded SuffixFrequency and SuffixLength.
 
-################################################################# GLMER MODEL BROJ 1: FREKVENCIJA LEME (KOSTIC)
+# Visualization of multicolinearity (3 predictors).
+postscript("isidora.pairscor1.ps", width=16, height=16,paper="special",horizontal=FALSE,onefile=FALSE)
+png("isidora.pairscor1.png", width=800, height=800)
+pairscor.fnc(dat[,c("flem","nlen","sprod")], hist=TRUE, smooth=TRUE, cex.point=1, col.points="darkgrey")
+dev.off()
 
-########## ########## Ako pamtim dobro dogovor, rekla si mi samo da uzmem onaj lmer model.
+# Visualization of multicolinearity (5 predictors).
+postscript("isidora1.pairscor1.ps", width=16, height=16,paper="special",horizontal=FALSE,onefile=FALSE)
+png("isidora1.pairscor1.png", width=800, height=800)
+pairscor.fnc(dat[,c("flem","nlen","fsuf","slen","sprod")], hist=TRUE, smooth=TRUE, cex.point=1, col.points="darkgrey")
+dev.off()
 
-----------------------------
----------------------------------------------
----------------------------------------------------------
+# ______________________________
+# _____________________________________________
+# ____________________________________________________________
 
-########################## LMER KONACNI #######
-################### SA NJE #################
+# ------------------
+# -------------------------------- LMER ANALYSIS!
+# ------------------
 
-glmer.dat6 <- glmer(Tacnost ~ poly(TrialOrder,2) + len.z + fsuf.z*NV + flemk.z + (1|Ispitanik) + (0+len.z|Ispitanik) +(1|Stimulus), data=dat, family="binomial")
-summary (glmer.dat6)
+# ________________________
+# _____________________________________________
+# ____________________________________________________________
 
-#Random effects:
-# Groups      Name        Variance Std.Dev.
-# Stimulus    (Intercept) 2.01336  1.4189  
-# Ispitanik   len.z       0.02806  0.1675  
-# Ispitanik.1 (Intercept) 0.22182  0.4710  
-#Number of obs: 2023, groups:  Stimulus, 88; Ispitanik, 46
-#
-#Fixed effects:
-#                     Estimate Std. Error z value Pr(>|z|)    
-#(Intercept)            3.7379     0.3923   9.528  < 2e-16 ***
-#poly(TrialOrder, 2)1   9.6344     4.1242   2.336  0.01949 *  
-#poly(TrialOrder, 2)2   0.7953     4.1678   0.191  0.84866    
-#len.z                  0.2887     0.2091   1.380  0.16748    
-#fsuf.z                 0.7625     0.2792   2.731  0.00632 ** 
-#NVvise                 2.0246     1.0345   1.957  0.05033 .  
-#flemk.z                1.0501     0.2493   4.213 2.52e-05 ***
-#fsuf.z:NVvise         -4.0227     1.3319  -3.020  0.00253 ** 
+################################################################# GLMER: Generalized Linear Mixed-Effects Regression!
 
+# Note: I will take the final LMER model, and I will change all parameters that need to be changed to become GLMER model.
+# Note2: Without -nje, and without Model Criticism.
 
----------------------
-dat$NV <- relevel(dat$NV, ref = "jedno")
+dat1=dat[dat$SuffixFrequency<10000,]
 
-glmer.dat6 <- glmer(Tacnost ~ poly(TrialOrder,2) + len.z + fsuf.z*NV + flemk.z + (1|Ispitanik) + (0+len.z|Ispitanik) +(1|Stimulus), data=dat, family="binomial")
-summary (glmer.dat6)
+dat1$SuffixAmbiguity <- relevel(dat1$SuffixAmbiguity, ref = "unambiguous")
+
+glmer.dat1 <- glmer(Accuracy ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat, family="binomial")
+summary (glmer.dat1)
 
 #Random effects:
-# Groups      Name        Variance Std.Dev.
-# Stimulus    (Intercept) 2.01336  1.4189  
-# Ispitanik   len.z       0.02806  0.1675  
-# Ispitanik.1 (Intercept) 0.22182  0.4710  
-#Number of obs: 2023, groups:  Stimulus, 88; Ispitanik, 46
+# Groups      Name                 Variance  Std.Dev. Corr       
+# TrialNumber (Intercept)            1.68124  1.2966             
+# Subject     nlen.z                 0.02778  0.1667             
+#             poly(TrialOrder, 2)1 453.17771 21.2880  -0.30      
+#             poly(TrialOrder, 2)2  83.75679  9.1519  -0.94  0.62
+# Subject.1   (Intercept)            0.21836  0.4673             
+#Number of obs: 2023, groups:  TrialNumber, 88; Subject, 46
 #
 #Fixed effects:
-#                     Estimate Std. Error z value Pr(>|z|)    
-#(Intercept)            3.7379     0.3923   9.528  < 2e-16 ***
-#poly(TrialOrder, 2)1   9.6344     4.1242   2.336  0.01949 *  
-#poly(TrialOrder, 2)2   0.7953     4.1678   0.191  0.84866    
-#len.z                  0.2887     0.2091   1.380  0.16748    
-#fsuf.z                 0.7625     0.2792   2.731  0.00632 ** 
-#NVvise                 2.0246     1.0345   1.957  0.05033 .  
-#flemk.z                1.0501     0.2493   4.213 2.52e-05 ***
-#fsuf.z:NVvise         -4.0227     1.3319  -3.020  0.00253 ** 
+#                           Estimate Std. Error z value Pr(>|z|)    
+#(Intercept)                 3.50785    0.35026  10.015  < 2e-16 ***
+#poly(TrialOrder, 2)1       11.98442    5.53443   2.165   0.0304 *  
+#poly(TrialOrder, 2)2        3.79703    4.71865   0.805   0.4210    
+#nlen.z                      0.21512    0.19552   1.100   0.2712    
+#sprod.z                     0.31238    0.22679   1.377   0.1684    
+#flem.z                      1.36199    0.21073   6.463 1.03e-10 ***
+#SuffixAmbiguityunambiguous  0.08815    0.46009   0.192   0.8481
 
-________________________________________________________
-__________________________________________________________________________________
-_________________________________________________________________________________________________________
-
-################################################################# MODEL BROJ 2: FREKVENCIJA LEME (SRWAC)
-
-----------------------------
----------------------------------------------
----------------------------------------------------------
-
-########################## TRENUTNO NAJBOLJI #######
-################### SA NJE #################
-
-glmer.dat3 <- glmer(Tacnost ~ poly(TrialOrder,2) + len.z + fsuf.z + flemw.z + NV + (1|Ispitanik) + (0+len.z|Ispitanik) +(1|Stimulus), data=dat, family="binomial")
-summary (glmer.dat3)
-
-#Random effects:
-# Groups      Name        Variance Std.Dev.
-#Stimulus    (Intercept) 1.69397  1.3015  
-# Ispitanik   len.z       0.03042  0.1744  
-# Ispitanik.1 (Intercept) 0.22666  0.4761  
-#Number of obs: 2023, groups:  Stimulus, 88; Ispitanik, 46
-#
-#Fixed effects:
-#                      Estimate Std. Error z value Pr(>|z|)    
-#(Intercept)           3.447492   0.349754   9.857  < 2e-16 ***
-#poly(TrialOrder, 2)1 10.408652   4.135174   2.517   0.0118 *  
-#poly(TrialOrder, 2)2  1.126053   4.171276   0.270   0.7872    
-#len.z                 0.185551   0.194708   0.953   0.3406    
-#fsuf.z                0.146900   0.252459   0.582   0.5606    
-#flemw.z               1.366663   0.217854   6.273 3.53e-10 ***
-#NVvise               -0.003134   0.512793  -0.006   0.9951    
-
-_____________________________________________
-____________________________________________________________
-__________________________________________________________________________________
-
-################################################################# MODEL BROJ 3: FREKVENCIJA POVRSINSKA (SRWAC)
-
-glmer.dat6 <- glmer(Tacnost ~ poly(TrialOrder,2) + len.z + fsuf.z + fpov.z + NV + (1|Ispitanik) + (0+len.z|Ispitanik) +(1|Stimulus), data=dat, family="binomial")
-summary (glmer.dat6)
-
-#Random effects:
-# Groups      Name        Variance  Std.Dev.
-# Stimulus    (Intercept) 1.447e+00 1.20310 
-# Ispitanik   len.z       6.789e-05 0.00824 
-# Ispitanik.1 (Intercept) 2.228e-01 0.47207 
-#Number of obs: 2023, groups:  Stimulus, 88; Ispitanik, 46
-#
-#Fixed effects:
-#                     Estimate Std. Error z value Pr(>|z|)    
-#(Intercept)           3.42252    0.33428  10.238  < 2e-16 ***
-#poly(TrialOrder, 2)1 10.17160    4.11198   2.474   0.0134 *  
-#poly(TrialOrder, 2)2  1.07198    4.13636   0.259   0.7955    
-#len.z                 0.21659    0.18052   1.200   0.2302    
-#fsuf.z                0.17085    0.24129   0.708   0.4789    
-#fpov.z                1.40548    0.20808   6.755 1.43e-11 ***
-#NVvise               -0.02574    0.49405  -0.052   0.9585     
+################## Results fit with those from LMER analysis, except the LemmaFrequency effect, which is inhibitory in those analysis.
+# This analysis definitely is not important for our study, so we will use another (much powerfull analysis in other repository).
