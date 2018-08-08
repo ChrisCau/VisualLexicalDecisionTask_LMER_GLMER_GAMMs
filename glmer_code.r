@@ -187,4 +187,4 @@ summary (glmer.dat1)
 #SuffixAmbiguityunambiguous  0.08815    0.46009   0.192   0.8481
 
 ################## Results fit with those from LMER analysis, except the LemmaFrequency effect, which is inhibitory in this analysis.
-# This analysis definitely is not important for our study, so we will use another (much powerfull analysis in other repository) -- GAMMs.
+# This analysis definitely is not sufficiently strong for our study, so we will use another (much powerfull analysis in other repository) -- GAMMs.
