@@ -1,7 +1,4 @@
-################ Kodovi za ispit kod Veljka (GAMM)
-
-# Prvo da ucitam ove moje pakete koji mi trebaju
-
+# Loading packages.
 require(rms)
 require(lme4)
 require(languageR)
