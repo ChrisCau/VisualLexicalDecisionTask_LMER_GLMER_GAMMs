@@ -394,38 +394,37 @@ table(dat$SuffixFrequency)
 # ________________________________________________________________
 
 # Colinearity between predictors.
-C=cov(dat[,c("flem","nlen","fsuf","slen","sprod")], y = NULL, use = "everything", method = c("pearson", "kendall", "spearman"))
+C=cov(dat[,c("flem.z","nlen.z","fsuf.z","slen.z","sprod.z")], y = NULL, use = "everything", method = c("pearson", "kendall", "spearman"))
 Cor=cov2cor(C)
 Cor
 
-#             flem        nlen       fsuf        slen       sprod
-#flem   1.00000000 -0.02192262  0.4623827  0.01930949  0.34034109
-#nlen  -0.02192262  1.00000000 -0.1175926  0.62876318 -0.02878838
-#fsuf   0.46238265 -0.11759259  1.0000000 -0.27074274  0.91055550
-#slen   0.01930949  0.62876318 -0.2707427  1.00000000 -0.20600849
-#sprod  0.34034109 -0.02878838  0.9105555 -0.20600849  1.00000000
+#             flem.z      nlen.z     fsuf.z      slen.z     sprod.z
+#flem.z   1.00000000 -0.02192262  0.4623827  0.01930949  0.34034109
+#nlen.z  -0.02192262  1.00000000 -0.1175926  0.62876318 -0.02878838
+#fsuf.z   0.46238265 -0.11759259  1.0000000 -0.27074274  0.91055550
+#slen.z   0.01930949  0.62876318 -0.2707427  1.00000000 -0.20600849
+#sprod.z  0.34034109 -0.02878838  0.9105555 -0.20600849  1.00000000
 
-collin.fnc(dat[,c("flem","nlen","fsuf","slen","sprod")])$cnumber
-
+collin.fnc(dat[,c("flem.z","nlen.z","fsuf.z","slen.z","sprod.z")])$cnumber
 # This value is too big!
-#48.82148
+# 5.577054
 
 # Reduced, but still too big! This suggest that GAMMs might be more appropriate analysis for this data.
-collin.fnc(dat[,c("flem","nlen","sprod")])$cnumber
-#29.71396
+collin.fnc(dat[,c("flem.z","nlen.z","sprod.z")])$cnumber
+# 1.427498
 
 # Note: I exscluded SuffixFrequency and SuffixLength.
 
 # Visualization of multicolinearity (3 predictors).
 postscript("isidora.pairscor1.ps", width=16, height=16,paper="special",horizontal=FALSE,onefile=FALSE)
 png("isidora.pairscor1.png", width=800, height=800)
-pairscor.fnc(dat[,c("flem","nlen","sprod")], hist=TRUE, smooth=TRUE, cex.point=1, col.points="darkgrey")
+pairscor.fnc(dat[,c("flem.z","nlen.z","sprod.z")], hist=TRUE, smooth=TRUE, cex.point=1, col.points="darkgrey")
 dev.off()
 
 # Visualization of multicolinearity (5 predictors).
-postscript("isidora1.pairscor1.ps", width=16, height=16,paper="special",horizontal=FALSE,onefile=FALSE)
-png("isidora1.pairscor1.png", width=800, height=800)
-pairscor.fnc(dat[,c("flem","nlen","fsuf","slen","sprod")], hist=TRUE, smooth=TRUE, cex.point=1, col.points="darkgrey")
+postscript("isidora2.pairscor1.ps", width=16, height=16,paper="special",horizontal=FALSE,onefile=FALSE)
+png("isidora2.pairscor1.png", width=800, height=800)
+pairscor.fnc(dat[,c("flem.z","nlen.z","fsuf.z","slen.z","sprod.z")], hist=TRUE, smooth=TRUE, cex.point=1, col.points="darkgrey")
 dev.off()
 
 # ______________________________
