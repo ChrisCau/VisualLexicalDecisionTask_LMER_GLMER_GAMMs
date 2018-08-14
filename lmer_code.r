@@ -279,7 +279,7 @@ shapiro.test(dat$RT)
 
 # Note: It is significant, distribution is not normal, even after the transformation. In psycholinguistics studies, this is very often the case.
 
-# Normalization of continuous precitors, to be comparable on the same scale.
+# Normalization of continuous precitors, to be comparable on the same scale (by centring to zero and dividing by the standard deviation – z-score).
 dat$trial.z = scale(dat$TrialOrder)
 dat$flem.z = scale(dat$flem)
 dat$nlen.z = scale(dat$nlen)
