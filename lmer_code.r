@@ -393,7 +393,7 @@ table(dat$SuffixFrequency)
 # _________________________________________________________
 # ________________________________________________________________
 
-# Colinearity between predictors.
+# Colinearity between continuous predictors.
 C=cov(dat[,c("flem.z","nlen.z","fsuf.z","slen.z","sprod.z")], y = NULL, use = "everything", method = c("pearson", "kendall", "spearman"))
 Cor=cov2cor(C)
 Cor
