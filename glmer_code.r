@@ -65,7 +65,7 @@ dat$fsuf=log(dat$SuffixFrequency)
 dat$slen=log(dat$SuffixLength)
 dat$sprod=log(dat$SuffixProductivity)
 
-# Normalization of continuous precitors, to be comparable on the same scale.
+# Normalization of continuous precitors, to be comparable on the same scale (by centring to zero and dividing by the standard deviation – z-score).
 dat$trial.z = scale(dat$TrialOrder)
 dat$flem.z = scale(dat$flem)
 dat$nlen.z = scale(dat$nlen)
