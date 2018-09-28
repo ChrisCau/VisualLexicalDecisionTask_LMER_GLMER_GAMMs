@@ -164,7 +164,7 @@ ks.test(jitter(dat$RT),"pnorm",mean(dat$RT),sd(dat$RT))
 #        One-sample Kolmogorov-Smirnov test
 #
 #data:  jitter(dat$RT)
-#D = 0.041731, p-value = 0.006774
+#D = 0.041794, p-value = 0.00666
 #alternative hypothesis: two-sided
 
 # Note: This test is statistically significant, and this suggest that our sample distribution is different than reference probability distribution [distribution is not normal].
@@ -309,7 +309,6 @@ summary(gam2)
 
 # Comparasion of two models.
 compareML(gam1,gam2)
-anova(gam1,gam2,test="Chisq")
 
 #Chi-square test of REML scores
 #-----
@@ -319,7 +318,11 @@ anova(gam1,gam2,test="Chisq")
 #
 #AIC difference: 25.58, model gam2 has lower AIC.
 #
-#
+# Note: gam2 is better model (REML Score), also AIC is lower, but athors (Baayen et al., 2018) suggested to look into the REML scores.
+
+# Which model is better we can see through the next function, but previous one is better!
+anova(gam1,gam2,test="Chisq")
+
 #Model 1: RT ~ SuffixAmbiguity + trial.z + nlen.z + flem.z + sprod.z + 
 #    s(TrialNumber, bs = "re") + s(trial.z, Subject, bs = "fs", 
 #    m = 1)
@@ -332,11 +335,11 @@ anova(gam1,gam2,test="Chisq")
 #---
 #Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-# Note: gam2 is better model, because AIC is lower.
+# Note: gam2 is again better model.
 
 # -----
 
-# Same model as gam2, but I change k of nlen.z.
+# Same model as gam2, but I will change k of nlen.z.
 gam3 <- gam(RT ~ SuffixAmbiguity +
             trial.z +
             s(nlen.z, k=8) +
@@ -368,13 +371,12 @@ summary(gam3)
 
 # Comparasion of two models.
 compareML(gam2,gam3)
-anova(gam2,gam3,test="Chisq")
 
-# Note: gam3 is better model, a bit (extremely small difference), but is better (AIC is lower).
+# Note: gam3 is better model (extremely small difference between models).
 
 # ----
 
-# I still looking for the best model.
+# I am still looking for the best model.
 gam4 <- gam(RT ~ SuffixAmbiguity +
             trial.z +
             s(nlen.z, k=8) +
@@ -388,7 +390,6 @@ summary(gam4)
 
 # Comparasion of two models.
 compareML(gam3,gam4)
-anova(gam3,gam4,test="Chisq")
 
 # Note: gam3 is better model.
 
@@ -407,15 +408,14 @@ summary(gam5)
 
 # Comparasion of two models.
 compareML(gam3,gam5)
-anova(gam3,gam5,test="Chisq")
 
-# Note: gam3 is better again (lower AIC),  definitely I continue on this model.
+# Note: gam3 is better again.
 
 # -----
 
 ############# Checking the existence of potential interactions (I part: interactions with SuffixAmbiguity).
 
-# Build the first model.
+# The first model.
 gam6 <- gam(RT ~ SuffixAmbiguity +
             trial.z +
             s(nlen.z, k=8) +
@@ -446,7 +446,6 @@ summary(gam6)
 
 # Comparasion of two models.
 compareML(gam3,gam6)
-anova(gam3,gam6,test="Chisq")
 
 # Note: The difference is extremely small, but gam6 is better, I will try with other interactions.
 
@@ -465,13 +464,11 @@ summary(gam7)
 
 # Comparasion of two models (gam3 and gam7).
 compareML(gam3,gam7)
-anova(gam3,gam7,test="Chisq")
 
 # Note: Model gam3 is better.
 
 # Comparasion of two models (gam6 and gam7).
 compareML(gam6,gam7)
-anova(gam6,gam7,test="Chisq")
 
 # Note: Model gam6 is better.
 
@@ -506,32 +503,17 @@ summary(gam8)
 
 # Comparasion of two models (gam3 and gam8).
 compareML(gam3,gam8)
-anova(gam3,gam8,test="Chisq")
 
 # Note: gam8 is better, I will check what will be with gam6 and gam8.
 
 # Comparasion of two models (gam6 and gam8).
 compareML(gam6,gam8)
-anova(gam6,gam8,test="Chisq")
 
 #  Model    Score Edf Difference    Df
 #1  gam6 251.8339  14                 
 #2  gam8 249.5802  14     -2.254 0.000
 #
 #AIC difference: 6.56, model gam8 has lower AIC.
-#
-#> anova(gam6,gam8,test="Chisq")
-#Analysis of Deviance Table
-#
-#Model 1: RT ~ SuffixAmbiguity + trial.z + s(nlen.z, k = 8) + s(flem.z, 
-#    by = SuffixAmbiguity) + s(sprod.z) + s(TrialNumber, bs = "re") + 
-#    s(trial.z, Subject, bs = "fs", m = 1)
-#Model 2: RT ~ SuffixAmbiguity + trial.z + s(nlen.z, k = 8, by = SuffixAmbiguity) + 
-#    s(flem.z) + s(sprod.z) + s(TrialNumber, bs = "re") + s(trial.z, 
-#    Subject, bs = "fs", m = 1)
-#  Resid. Df Resid. Dev     Df Deviance Pr(>Chi)  
-#1    1461.6    100.794                           
-#2    1457.1     99.918 4.5474  0.87587  0.01565 *
 
 # Note: gam8 is the best model, so far.
 # ----
@@ -566,7 +548,6 @@ summary(gam9)
 
 # Comparasion of two models (gam8 and gam9).
 compareML(gam8,gam9)
-anova(gam8,gam9,test="Chisq")
 
 #Chi-square test of REML scores
 #-----
@@ -575,22 +556,10 @@ anova(gam8,gam9,test="Chisq")
 #2  gam9 244.1120  15      5.468 1.000 9.430e-04  ***
 #
 #AIC difference: 2.49, model gam9 has lower AIC.
-#
-#Analysis of Deviance Table
-#
-#Model 1: RT ~ SuffixAmbiguity + trial.z + s(nlen.z, k = 8, by = SuffixAmbiguity) + 
-#    s(flem.z) + s(sprod.z) + s(TrialNumber, bs = "re") + s(trial.z, 
-#    Subject, bs = "fs", m = 1)
-#Model 2: RT ~ SuffixAmbiguity + trial.z + s(nlen.z, k = 8, by = SuffixAmbiguity) + 
-#    te(flem.z, sprod.z) + s(TrialNumber, bs = "re") + s(trial.z, 
-#    Subject, bs = "fs", m = 1)
-#  Resid. Df Resid. Dev     Df Deviance Pr(>Chi)  
-#1    1457.1     99.918                           
-#2    1451.7     99.210 5.3512  0.70779  0.06959 .
 
 # ----
 
-# Note: this is final model.
+# Note: this is final model (gam9).
 
 # Final model criticism.
 gam9.a <- gam(RT ~ SuffixAmbiguity +
@@ -707,6 +676,3 @@ summary(gam9.rho)
 # -----------------
 # ______________________________
 # _____________________________________________
-
-# The end, only visualization is left.
-
