@@ -34,12 +34,12 @@ colnames(dat)
 #[16] "SuffixProductivity"
 
 # ------------------
-# -------------------------------- PREPARING DATA FOR STATISTICAL ANALYSIS!
+# -------------------------------- PRE-PROCESSING OF RAW DATA
 # ------------------
 
-# This part of data analysis is almost the same as in previous analysis, LMER & GLMER.
+# This part of data analysis is almost the same as in the previous analyses, LMER & GLMER.
 
-# Sorting the participants according to the accuracy of the answers they gave. 
+# Sorting the participants (N = 46) according to the accuracy of the answers they gave. 
 sort(tapply(dat$Accuracy, dat$Subject, sum)/44)
 
 #      s28       s31       s40       s22       s33       s29       s32       s39 
@@ -55,7 +55,7 @@ sort(tapply(dat$Accuracy, dat$Subject, sum)/44)
 #      s24       s25       s34       s38       s20        s9 
 #0.9545455 0.9545455 0.9545455 0.9545455 0.9772727 0.9772727
 
-# Sorting the stimuli according to the accuracy of the answers participants gave on it. 
+# Sorting the stimuli (N = 88) according to the accuracy of the answers participants gave on it. 
 sort(tapply(dat$Accuracy, dat$TrialNumber, sum)/23)
 
 #      100       109        17       126        37        23        98       115 
@@ -108,7 +108,7 @@ dim(dat)
 # -----------------------------------------
 
 # I will skip this step with subset, and the examination of differences between ambiguous and unambiguous suffixes in some of covariates' measures. 
-# These steps are identical as in LMER/GLMER analysis.
+# These steps are identical as in LMER and GLMER analyses.
 # ____________
 # __________________________________________________________
 
@@ -132,13 +132,36 @@ plot(density(dat$RT))
 qqnorm(dat$RT)
 par(mfrow=c(1,1))
 
+# ------- Shapiro-Wilk & Kolmogorov-Smirnov after transformation of RTs (this step has been skipped earlier, because on the basis of VIP1 graphics I saw that distribution deviates exceptionally from normal [before transformation]).
+
+# I will use K-S test to test normality of transformed RTs distribution.
+ks.test(jitter(dat$RT),"pnorm",mean(dat$RT),sd(dat$RT))
+
+#        One-sample Kolmogorov-Smirnov test
+#
+#data:  jitter(dat$RT)
+#D = 0.13817, p-value < 2.2e-16
+#alternative hypothesis: two-sided
+
+### Note: This test is statistically significant, and this suggest that our sample distribution is different than reference probability distribution [distribution is not normal].
+
+# I continue to deal with the distribution, and it's normality. I will use S-W test, and this test is more powerful than K-S test. If S-W test is significant (p-value), than distribution is not normal. 
+shapiro.test(dat$RT)
+
+#        Shapiro-Wilk normality test
+#
+#data:  dat$RT
+#W = 0.81038, p-value < 2.2e-16
+
+### Note: It is significant, distribution is not normal, even after the transformation.
+
 # Searching for an appropriate transformation for RTs.
 powerTransform(dat$RT)
 #Estimated transformation parameters 
 #   dat$RT 
 #-1.314563 
 
-# Note: The results suggest inverse transformation of RTs.
+### Note: The results suggest inverse transformation of RTs.
 
 # Following previous studies, I will use log transformation to transform the raw values of LemmaFrequency, SuffixFrequency, SuffixLength, NounLength, and SuffixProductivity.
 dat$flem=log(dat$LemmaFrequency)
@@ -156,27 +179,6 @@ plot(sort(dat$RT))
 plot(density(dat$RT))
 qqnorm(dat$RT)
 par(mfrow=c(1,1))
-
-# ------- Shapiro-Wilk & Kolmogorov-Smirnov after transformation of RTs (this step has been skipped earlier, because on the basis of VIP1 graphics I saw that distribution deviates exceptionally from normal [before transformation]).
-
-# I will use K-S test to test normality of transformed RTs distribution.
-ks.test(jitter(dat$RT),"pnorm",mean(dat$RT),sd(dat$RT))
-#        One-sample Kolmogorov-Smirnov test
-#
-#data:  jitter(dat$RT)
-#D = 0.041794, p-value = 0.00666
-#alternative hypothesis: two-sided
-
-# Note: This test is statistically significant, and this suggest that our sample distribution is different than reference probability distribution [distribution is not normal].
-
-# I continue to deal with the distribution, and it's normality. I will use S-W test, and this test is more powerful than K-S test. If S-W test is significant (p-value), than distribution is not normal. 
-shapiro.test(dat$RT)
-#        Shapiro-Wilk normality test
-#
-#data:  dat$RT
-#W = 0.99274, p-value = 3.377e-07
-
-# Note: It is significant, distribution is not normal, even after the transformation.
 
 # Normalization of continuous precitors, to be comparable on the same scale (by centring to zero and dividing by the standard deviation – z-score).
 dat$trial.z = scale(dat$TrialOrder)
@@ -230,7 +232,7 @@ collin.fnc(dat[,c("flem.z","nlen.z","fsuf.z","slen.z","sprod.z")])$cnumber
 collin.fnc(dat[,c("flem.z","nlen.z","sprod.z")])$cnumber
 # 1.427498
 
-# Note: I excluded SuffixFrequency and SuffixLength.
+### Note: I excluded SuffixFrequency and SuffixLength.
 
 # Visualization of multicolinearity (3 predictors).
 postscript("isidora.pairscor1.ps", width=16, height=16,paper="special",horizontal=FALSE,onefile=FALSE)
@@ -249,7 +251,7 @@ dev.off()
 # ____________________________________________________________
 
 # ------------------
-# -------------------------------- GAMMs ANALYSIS!
+# -------------------------------- GAMMs
 # ------------------
 
 # ________________________
@@ -279,7 +281,7 @@ gam1 <- gam(RT ~ SuffixAmbiguity +
             data=dat)
 summary(gam1)
 
-# Same model as gam1, but I include s(), because I would like to model a potentially nonlinear smooth of my continuous predictors.
+# The same model as gam1, but I will include s(), because I would like to model a potentially nonlinear smooth of my continuous predictors.
 gam2 <- gam(RT ~ SuffixAmbiguity +
             trial.z +
             s(nlen.z, k=6) +
@@ -291,51 +293,35 @@ gam2 <- gam(RT ~ SuffixAmbiguity +
             data=dat)
 summary(gam2)
 
-#Parametric coefficients:
-#                            Estimate Std. Error t value Pr(>|t|)    
-#(Intercept)                -1.391640   0.029515 -47.150   <2e-16 ***
-#SuffixAmbiguityunambiguous -0.032369   0.017944  -1.804   0.0714 .  
-#trial.z                    -0.006423   0.010838  -0.593   0.5535    
-#---
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-#Approximate significance of smooth terms:
-#                         edf  Ref.df      F  p-value    
-#s(nlen.z)          3.415e+00   4.022  7.177 1.06e-05 ***
-#s(flem.z)          4.465e+00   5.359 32.723  < 2e-16 ***
-#s(sprod.z)         2.594e+00   3.147  2.867   0.0307 *  
-#s(TrialNumber)     2.436e-04   1.000  0.000   0.5276    
-#s(trial.z,Subject) 1.073e+02 413.000  2.352  < 2e-16 ***
-
 # Comparasion of two models.
 compareML(gam1,gam2)
 
-#Chi-square test of REML scores
-#-----
+# Chi-square test of REML scores
+# -----
 #  Model    Score Edf Difference    Df   p.value Sig.
-#1  gam1 263.4124   9                                
-#2  gam2 253.1520  12     10.260 3.000 1.324e-04  ***
+# 1  gam1 263.4124   9                                
+# 2  gam2 253.1520  12     10.260 3.000 1.324e-04  ***
 #
-#AIC difference: 25.58, model gam2 has lower AIC.
+# AIC difference: 25.58, model gam2 has lower AIC.
 #
-# Note: gam2 is better model (REML Score), also AIC is lower, but athors (Baayen et al., 2018) suggested to look into the REML scores.
+### Note: gam2 is better model (REML Score), also AIC is lower, but athors (Baayen et al., 2018) suggested to look into the REML scores.
 
-# Which model is better we can see through the next function, but previous one is better!
+# Which model is better we can also see through the next function, but previous one is better!
 anova(gam1,gam2,test="Chisq")
 
-#Model 1: RT ~ SuffixAmbiguity + trial.z + nlen.z + flem.z + sprod.z + 
+# Model 1: RT ~ SuffixAmbiguity + trial.z + nlen.z + flem.z + sprod.z + 
 #    s(TrialNumber, bs = "re") + s(trial.z, Subject, bs = "fs", 
 #    m = 1)
-#Model 2: RT ~ SuffixAmbiguity + trial.z + s(nlen.z, k = 6) + s(flem.z) + 
+# Model 2: RT ~ SuffixAmbiguity + trial.z + s(nlen.z, k = 6) + s(flem.z) + 
 #    s(sprod.z) + s(TrialNumber, bs = "re") + s(trial.z, Subject, 
 #    bs = "fs", m = 1)
 #  Resid. Df Resid. Dev     Df Deviance  Pr(>Chi)    
-#1    1479.4     105.07                              
-#2    1462.3     101.66 17.104   3.4099 3.468e-05 ***
-#---
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 1    1479.4     105.07                              
+# 2    1462.3     101.66 17.104   3.4099 3.468e-05 ***
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-# Note: gam2 is again better model.
+### Note: gam2 is again better model.
 
 # -----
 
@@ -351,28 +337,10 @@ gam3 <- gam(RT ~ SuffixAmbiguity +
             data=dat)
 summary(gam3)
 
-#Parametric coefficients:
-#                            Estimate Std. Error t value Pr(>|t|)    
-#(Intercept)                -1.391562   0.029520 -47.140   <2e-16 ***
-#SuffixAmbiguityunambiguous -0.032550   0.017957  -1.813   0.0701 .  
-#trial.z                    -0.006403   0.010839  -0.591   0.5548    
-#---
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-#Approximate significance of smooth terms:
-#                         edf  Ref.df      F  p-value    
-#s(nlen.z)          3.652e+00   4.401  6.424 1.78e-05 ***
-#s(flem.z)          4.446e+00   5.336 32.782  < 2e-16 ***
-#s(sprod.z)         2.580e+00   3.130  2.855   0.0315 *  
-#s(TrialNumber)     3.809e-04   1.000  0.000   0.5220    
-#s(trial.z,Subject) 1.074e+02 413.000  2.353  < 2e-16 ***
-#---
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
 # Comparasion of two models.
 compareML(gam2,gam3)
 
-# Note: gam3 is better model (extremely small difference between models).
+### Note: gam3 is better model (extremely small difference between models).
 
 # ----
 
@@ -391,7 +359,7 @@ summary(gam4)
 # Comparasion of two models.
 compareML(gam3,gam4)
 
-# Note: gam3 is better model.
+### Note: gam3 is better model.
 
 # ----
 
@@ -409,13 +377,13 @@ summary(gam5)
 # Comparasion of two models.
 compareML(gam3,gam5)
 
-# Note: gam3 is better again.
+### Note: gam3 is better again.
 
 # -----
 
 ############# Checking the existence of potential interactions (I part: interactions with SuffixAmbiguity).
 
-# The first model.
+# The first model with the interaction.
 gam6 <- gam(RT ~ SuffixAmbiguity +
             trial.z +
             s(nlen.z, k=8) +
@@ -427,27 +395,10 @@ gam6 <- gam(RT ~ SuffixAmbiguity +
             data=dat)
 summary(gam6)
 
-#Parametric coefficients:
-#                           Estimate Std. Error t value Pr(>|t|)    
-#(Intercept)                -1.38994    0.02976 -46.707   <2e-16 ***
-#SuffixAmbiguityunambiguous -0.03459    0.01871  -1.849   0.0647 .  
-#trial.z                    -0.00640    0.01087  -0.589   0.5560    
-#---
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-#Approximate significance of smooth terms:
-#                                           edf  Ref.df      F  p-value    
-#s(nlen.z)                            4.101e+00   4.845  5.809 2.43e-05 ***
-#s(flem.z):SuffixAmbiguityambiguous   1.000e+00   1.001 98.949  < 2e-16 ***
-#s(flem.z):SuffixAmbiguityunambiguous 3.977e+00   4.755 17.617 6.60e-16 ***
-#s(sprod.z)                           2.988e+00   3.570  2.980   0.0286 *  
-#s(TrialNumber)                       2.246e-05   1.000  0.000   0.9758    
-#s(trial.z,Subject)                   1.080e+02 413.000  2.374  < 2e-16 ***
-
 # Comparasion of two models.
 compareML(gam3,gam6)
 
-# Note: The difference is extremely small, but gam6 is better, I will try with other interactions.
+### Note: The difference is extremely small, but gam6 is better, I will try with other interactions.
 
 # ----
 
@@ -465,12 +416,12 @@ summary(gam7)
 # Comparasion of two models (gam3 and gam7).
 compareML(gam3,gam7)
 
-# Note: Model gam3 is better.
+### Note: Model gam3 is better.
 
-# Comparasion of two models (gam6 and gam7).
+# Comparasion of two models with interactions (gam6 and gam7).
 compareML(gam6,gam7)
 
-# Note: Model gam6 is better.
+### Note: Model gam6 is better.
 
 # ----
 gam8 <- gam(RT ~ SuffixAmbiguity +
@@ -484,27 +435,10 @@ gam8 <- gam(RT ~ SuffixAmbiguity +
             data=dat)
 summary(gam8)
 
-#Parametric coefficients:
-#                           Estimate Std. Error t value Pr(>|t|)    
-#(Intercept)                -1.40970    0.02995 -47.063   <2e-16 ***
-#SuffixAmbiguityunambiguous -0.02101    0.01911  -1.099    0.272    
-#trial.z                    -0.00584    0.01091  -0.535    0.593    
-# ----
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#
-#Approximate significance of smooth terms:
-#                                           edf  Ref.df      F  p-value    
-#s(nlen.z):SuffixAmbiguityambiguous   3.978e+00   4.517  4.197  0.00488 ** 
-#s(nlen.z):SuffixAmbiguityunambiguous 4.037e+00   4.748  8.165 3.26e-07 ***
-#s(flem.z)                            2.782e+00   3.414 45.526  < 2e-16 ***
-#s(sprod.z)                           3.129e+00   3.725  2.970  0.03955 *  
-#s(TrialNumber)                       2.896e-04   1.000  0.000  0.76974    
-#s(trial.z,Subject)                   1.089e+02 413.000  2.398  < 2e-16 ***
-
 # Comparasion of two models (gam3 and gam8).
 compareML(gam3,gam8)
 
-# Note: gam8 is better, I will check what will be with gam6 and gam8.
+### Note: gam8 is better, I will check what will be with gam6 and gam8.
 
 # Comparasion of two models (gam6 and gam8).
 compareML(gam6,gam8)
@@ -515,7 +449,7 @@ compareML(gam6,gam8)
 #
 #AIC difference: 6.56, model gam8 has lower AIC.
 
-# Note: gam8 is the best model, so far.
+### Note: gam8 is the best model so far.
 # ----
 
 ############# Checking the existence of potential interactions (II part: interactions between continuous predictors).
@@ -530,21 +464,21 @@ gam9 <- gam(RT ~ SuffixAmbiguity +
             data=dat)
 summary(gam9)
 
-#Parametric coefficients:
+# Parametric coefficients:
 #                            Estimate Std. Error t value Pr(>|t|)    
-#(Intercept)                -1.406148   0.029917 -47.002   <2e-16 ***
-#SuffixAmbiguityunambiguous -0.025270   0.018765  -1.347    0.178    
-#trial.z                    -0.006108   0.010889  -0.561    0.575    
-#---
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# (Intercept)                -1.406148   0.029917 -47.002   <2e-16 ***
+# SuffixAmbiguityunambiguous -0.025270   0.018765  -1.347    0.178    
+# trial.z                    -0.006108   0.010889  -0.561    0.575    
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #
-#Approximate significance of smooth terms:
+# Approximate significance of smooth terms:
 #                                           edf  Ref.df      F  p-value    
-#s(nlen.z):SuffixAmbiguityambiguous   3.900e+00   4.447  3.628   0.0116 *  
-#s(nlen.z):SuffixAmbiguityunambiguous 3.516e+00   4.158  6.768 1.66e-05 ***
-#te(flem.z,sprod.z)                   9.954e+00  12.104 15.590  < 2e-16 ***
-#s(TrialNumber)                       1.832e-04   1.000  0.000   0.8480    
-#s(trial.z,Subject)                   1.088e+02 413.000  2.398  < 2e-16 ***
+# s(nlen.z):SuffixAmbiguityambiguous   3.900e+00   4.447  3.628   0.0116 *  
+# s(nlen.z):SuffixAmbiguityunambiguous 3.516e+00   4.158  6.768 1.66e-05 ***
+# te(flem.z,sprod.z)                   9.954e+00  12.104 15.590  < 2e-16 ***
+# s(TrialNumber)                       1.832e-04   1.000  0.000   0.8480    
+# s(trial.z,Subject)                   1.088e+02 413.000  2.398  < 2e-16 ***
 
 # Comparasion of two models (gam8 and gam9).
 compareML(gam8,gam9)
@@ -559,7 +493,7 @@ compareML(gam8,gam9)
 
 # ----
 
-# Note: this is final model (gam9).
+### Note: this is final model (gam9).
 
 # Final model criticism.
 gam9.a <- gam(RT ~ SuffixAmbiguity +
@@ -572,21 +506,21 @@ gam9.a <- gam(RT ~ SuffixAmbiguity +
             data=dat, subset=abs(scale(resid(gam9)))<2.5)
 summary(gam9.a)
 
-#Parametric coefficients:
+# Parametric coefficients:
 #                           Estimate Std. Error t value Pr(>|t|)    
-#(Intercept)                -1.41595    0.02970 -47.678   <2e-16 ***
-#SuffixAmbiguityunambiguous -0.01805    0.01793  -1.006    0.314    
-#trial.z                    -0.01028    0.01146  -0.897    0.370    
-#---
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# (Intercept)                -1.41595    0.02970 -47.678   <2e-16 ***
+# SuffixAmbiguityunambiguous -0.01805    0.01793  -1.006    0.314    
+# trial.z                    -0.01028    0.01146  -0.897    0.370    
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #
-#Approximate significance of smooth terms:
+# Approximate significance of smooth terms:
 #                                           edf  Ref.df      F  p-value    
-#s(nlen.z):SuffixAmbiguityambiguous   3.928e+00   4.464  4.219  0.00331 ** 
-#s(nlen.z):SuffixAmbiguityunambiguous 3.988e+00   4.645  7.551 1.41e-06 ***
-#te(flem.z,sprod.z)                   9.851e+00  11.975 17.053  < 2e-16 ***
-#s(TrialNumber)                       7.821e-05   1.000  0.000  0.86001    
-#s(trial.z,Subject)                   1.218e+02 413.000  2.761  < 2e-16 ***
+# s(nlen.z):SuffixAmbiguityambiguous   3.928e+00   4.464  4.219  0.00331 ** 
+# s(nlen.z):SuffixAmbiguityunambiguous 3.988e+00   4.645  7.551 1.41e-06 ***
+# te(flem.z,sprod.z)                   9.851e+00  11.975 17.053  < 2e-16 ***
+# s(TrialNumber)                       7.821e-05   1.000  0.000  0.86001    
+# s(trial.z,Subject)                   1.218e+02 413.000  2.761  < 2e-16 ***
 
 # ---------
 # -----------------
@@ -616,10 +550,10 @@ plot(scale(resid(gam9.a)), fitted(gam9.a))
 acf_resid(gam9.a, split_pred="Subject", main="ACF resid(gam9.a)")
 check_resid(gam9.a, split_pred=c("trial.z", "Subject"))
 
-# Note: Having in mind all things considered above, I think this model is not too complex, so it is not necessary to include AR1 in model.
+### Note: Having in mind all things considered above, I think this model is not too complex, so it is not necessary to include AR1 in model.
 # But, I will try to include this in the best GAMM model -- gam9.a!
 
-# I will specify the data for time series, and I will do that for a few very last models (I need to compare them).
+# I will specify the data for time series.
 start_event(data=dat, column="RT", event=c("trial.z", "Subject"))
 head(dat)
 
@@ -670,9 +604,6 @@ summary(gam9.rho)
 #s(TrialNumber)                       7.821e-05   1.000  0.000  0.86001    
 #s(trial.z,Subject)                   1.218e+02 413.000  2.761  < 2e-16 ***
 
-# Note: There is no any differences in the structure of results.
+# There is no any differences in the structure of results.
 
-# ---------
-# -----------------
-# ______________________________
-# _____________________________________________
+################## The end! :-)
