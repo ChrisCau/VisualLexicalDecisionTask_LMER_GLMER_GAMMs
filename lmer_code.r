@@ -32,10 +32,10 @@ colnames(dat)
 # [16] "SuffixProductivity"
 
 # ------------------
-# -------------------------------- PREPARING DATA FOR STATISTICAL ANALYSIS!
+# -------------------------------- PRE-PROCESSING OF RAW DATA!
 # ------------------
 
-# Sorting the participants according to the accuracy of the answers they gave. 
+# Sorting the participants (N = 46; 2 experimental groups) according to the accuracy of the answers they gave. 
 sort(tapply(dat$Accuracy, dat$Subject, sum)/44)
 
 #      s28       s31       s40       s22       s33       s29       s32       s39 
@@ -51,7 +51,7 @@ sort(tapply(dat$Accuracy, dat$Subject, sum)/44)
 #      s24       s25       s34       s38       s20        s9 
 #0.9545455 0.9545455 0.9545455 0.9545455 0.9772727 0.9772727
 
-# Sorting the stimuli according to the accuracy of the answers participants gave on it. 
+# Sorting the stimuli (N = 88; 2 experimental lists) according to the accuracy of the answers participants gave on it. 
 sort(tapply(dat$Accuracy, dat$TrialNumber, sum)/23)
 
 #      100       109        17       126        37        23        98       115 
@@ -77,7 +77,7 @@ sort(tapply(dat$Accuracy, dat$TrialNumber, sum)/23)
 #       29        32        33        36        39        41        42        43 
 #1.0434783 1.0434783 1.0434783 1.0434783 1.0434783 1.0434783 1.0434783 1.0434783 
 
-# Note: Now I need to throw out the participants and stimuli with above 25% error-rate! All participants have less than 25% error-rate!
+### Note: Now I need to throw out the participants and stimuli with above 25% error-rate (low criterion, but the data are not great)! All participants have less than 25% error-rate!
 
 # Deletion of stimuli (25% of the error)!
 dat=dat[dat$TrialNumber!="100",]
@@ -105,9 +105,8 @@ dim(dat)
 
 # -----------------------------------------
 
-# I have to examine in which covariates the ambiguous and unambiguous suffixes differ (e.g. Are ambiguous suffixes longer, or more frequent [stat.sign.]?!). I will create subset with 
-# data of two participants from different experimental groups (because it would be too long to look at the whole sample, and also it is useless).
-
+# I have to examine according to which covariates the ambiguous and unambiguous suffixes differ (e.g. Are ambiguous suffixes longer, or shorter [stat.sign.] than unambiguous?!). I will create subset with 
+# data of two participants from different experimental groups (because it would be too long to look at the whole data set).
 datx=dat[dat$Subject=="s9" | dat$Subject=="s38",]
 
 # Dimensions of subest.
@@ -131,7 +130,7 @@ boxplot(NounLength~SuffixAmbiguity, data=datx)
 #         7.07        7.76
 #        41.00       33.00
 
-# Note: This effect is marginally statistically significant (p = 0.04). This results suggest that unambiguous suffixes are in general longer than ambiguous.
+### Note: The result suggests that derived nouns with unambiguous suffixes are in general longer than derived nouns with unambiguous suffixes.
 
 # -------------------------
 ##################### Lemma Frequency (taken from the corpus srWac)
@@ -143,17 +142,17 @@ print(model.tables(aov.datx, "means"),digits=3)
 boxplot(LemmaFrequency~SuffixAmbiguity, data=datx)
 
 #                Df    Sum Sq   Mean Sq F value Pr(>F)  
-#SuffixAmbiguity  1 7.865e+08 786503093   3.235 0.0763 
+#SuffixAmbiguity  1 7.865e+08 786503093   3.235 0.0763
 #Residuals       72 1.750e+10 243114598 
 
 #     ambiguous unambiguous
 #         10934        4375
 # rep        41          33
 
-# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differ in the frequency of lemmas.
+### Note: This effect is not statistically significant (but, it's a very close to 0.05!), which means that derived nouns with ambiguous and unambiguous suffixes do not differ in the frequency of lemmas.
 
 # -------------------------
-##################### Suffix frequency (taken from the database created by me and my colleagues)
+##################### Suffix frequency 
 # -------------------------
 
 aov.datx= aov(SuffixFrequency~SuffixAmbiguity, data=datx)
@@ -169,7 +168,7 @@ boxplot(SuffixFrequency~SuffixAmbiguity, data=datx)
 #         4578        3925
 #rep        41          33
 
-# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differ in the suffix frequency.
+### Note: This effect is not statistically significant, which means that derived nouns with ambiguous and unambiguous suffixes do not differ in the frequency of suffixes.
 
 # -------------------------
 ##################### Suffix length (in letters)
@@ -188,7 +187,7 @@ boxplot(SuffixLength~SuffixAmbiguity, data=datx)
 #         2.73        2.97
 #rep     41.00       33.00
 
-# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differ in the suffix length.
+### Note: This effect is not statistically significant, which means that derived nouns with ambiguous and unambiguous suffixes do not differ in the length of suffixes.
 
 # -------------------------
 ##################### Suffix Productivity (taken from the database created by me and my colleagues)
@@ -207,8 +206,9 @@ boxplot(SuffixProductivity~SuffixAmbiguity, data=datx)
 #      377  197
 #      33   41
 
-# Note: This effect is not statistically significant, which means that nouns with ambiguous and unambiguous suffixes do not differ in the suffix productivity.
-# ______
+### Note: This effect is not statistically significant, which means that derived nouns with ambiguous and unambiguous suffixes do not differ in the productivity of suffixes.
+
+# ______________
 # _______________________________________
 # __________________________________________________________
 
@@ -230,16 +230,40 @@ plot(density(dat$RT))
 qqnorm(dat$RT)
 par(mfrow=c(1,1))
 
-# I have to examine RTs with powerTransform() to see which transformation I have to use (distribution of RTs is not normal). So, if the value is close to zero
-# the best transformation is log tranformation, if the value is close to one, than we need inverse transformation of raw RTs. 
+# ------- Shapiro-Wilk & Kolmogorov-Smirnov after transformation of RTs (this step has been skipped earlier, because on the basis of VIP1 graphics I saw that distribution deviates exceptionally from normal [before transformation]).
+
+# I will use K-S test to test normality of transformed RTs distribution.
+ks.test(jitter(dat$RT),"pnorm",mean(dat$RT),sd(dat$RT))
+
+#        One-sample Kolmogorov-Smirnov test
+#
+#data:  jitter(dat$RT)
+#D = 0.13817, p-value < 2.2e-16
+#alternative hypothesis: two-sided
+
+### Note: This test is statistically significant, which means that our distribution is not normal.
+
+# Furthermore, I will use S-W test, and this test is more powerful than K-S test. If S-W test is significant (p-value), than distribution is not normal. 
+shapiro.test(dat$RT)
+
+#        Shapiro-Wilk normality test
+#
+#data:  dat$RT
+#W = 0.81038, p-value < 2.2e-16
+
+### Note: It is significant, distribution is not normal. We need to transform our RT.
+
+# I have to examine RTs with powerTransform() to see which transformation I have to use. So, if the value is close to zero
+# the best transformation is log tranformation, if the value is close to 1 (or -1), than we need inverse transformation of raw RTs. 
 powerTransform(dat$RT)
+
 #Estimated transformation parameters 
 #   dat$RT 
 #-1.314563 
 
-# Note: The results suggest inverse transformation of RTs.
+### Note: The result suggests inverse transformation of RTs.
 
-# Following previous studies, I will use log transformation to transform the raw values of LemmaFrequency, SuffixFrequency, SuffixLength, NounLength, and SuffixProductivity.
+# Following the results of the previous studies, I will use log transformation to transform the raw values of LemmaFrequency, SuffixFrequency, SuffixLength, NounLength, and SuffixProductivity.
 dat$flem=log(dat$LemmaFrequency)
 dat$nlen=log(dat$NounLength)
 dat$fsuf=log(dat$SuffixFrequency)
@@ -255,29 +279,6 @@ plot(sort(dat$RT))
 plot(density(dat$RT))
 qqnorm(dat$RT)
 par(mfrow=c(1,1))
-
-# Note: This distribution is closer to normal.
-
-# ------- Shapiro-Wilk & Kolmogorov-Smirnov after transformation of RTs (this step has been skipped earlier, because on the basis of VIP1 graphics I saw that distribution deviates exceptionally from normal [before transformation]).
-
-# I will use K-S test to test normality of transformed RTs distribution.
-ks.test(jitter(dat$RT),"pnorm",mean(dat$RT),sd(dat$RT))
-#        One-sample Kolmogorov-Smirnov test
-#
-#data:  jitter(dat$RT)
-#D = 0.041749, p-value = 0.006742
-#alternative hypothesis: two-sided
-
-# Note: This test is statistically significant, and this suggest that our sample distribution is different than reference probability distribution [distribution is not normal].
-
-# I continue to deal with the distribution, and it's normality. I will use S-W test, and this test is more powerful than K-S test. If S-W test is significant (p-value), than distribution is not normal. 
-shapiro.test(dat$RT)
-#        Shapiro-Wilk normality test
-#
-#data:  dat$RT
-#W = 0.99274, p-value = 3.377e-07
-
-# Note: It is significant, distribution is not normal, even after the transformation. In psycholinguistics studies, this is very often the case.
 
 # Normalization of continuous precitors, to be comparable on the same scale (by centring to zero and dividing by the standard deviation – z-score).
 dat$trial.z = scale(dat$TrialOrder)
@@ -374,7 +375,6 @@ par(mfrow=c(1,1))
 # ____________________________________________________________
 
 # Visual inspection of random effects.
-
 qqmath(~RT|Subject,data=dat)
 qqmath(~RT|TrialNumber,data=dat)
 xylowess.fnc (RT~TrialOrder | Subject, data=dat, ylab= "RT")
@@ -413,7 +413,7 @@ collin.fnc(dat[,c("flem.z","nlen.z","fsuf.z","slen.z","sprod.z")])$cnumber
 collin.fnc(dat[,c("flem.z","nlen.z","sprod.z")])$cnumber
 # 1.427498
 
-# Note: I exscluded SuffixFrequency and SuffixLength.
+### Note: I exscluded SuffixFrequency and SuffixLength.
 
 # Visualization of multicolinearity (3 predictors).
 postscript("isidora.pairscor1.ps", width=16, height=16,paper="special",horizontal=FALSE,onefile=FALSE)
@@ -441,7 +441,9 @@ dev.off()
 
 ################################################################# LMER: Linear Mixed-Effect Regression!
 
-########## Random effects!
+######################### RANDOM EFFECTS
+
+# LMER models with Random effects only.
 lmer0 <- lmer(RT ~ 1 + (1|Subject) + (1|TrialNumber),	data=dat)
 ranefItem <- lmer(RT ~ 1 + (1|Subject),	data=dat)
 ranefSubj <- lmer(RT ~ 1 + (1|TrialNumber), data=dat)
@@ -454,7 +456,7 @@ anova(ranefItem, lmer0)
 #object  3 730.20 746.39 -362.10   724.20                             
 #..1     4 502.38 523.98 -247.19   494.38 229.81      1  < 2.2e-16 ***
 
-# Note: The second model is better (AIC and BIC is smaller, LogLik is bigger).
+### Note: The second model is better (AIC and BIC is smaller, LogLik is bigger).
 
 anova(ranefSubj, lmer0)
 
@@ -464,33 +466,22 @@ anova(ranefSubj, lmer0)
 #object  3 1043.87 1060.06 -518.93  1037.87                             
 #..1     4  502.38  523.98 -247.19   494.38 543.48      1  < 2.2e-16 ***
 
-# Note: The second model is better (AIC and BIC is smaller, LogLik is bigger).
+### Note: The second model is better (AIC and BIC is smaller, LogLik is bigger).
 
 # __________________________________________________________
 # ________________________________________________________________
 
-############# TRIAL ORDER 
+######################### TRIAL ORDER 
 
+# Normalized variable Trial order.
 lmer.dat <- lmer(RT ~ trial.z + (1|Subject) + (1|TrialNumber),	data=dat)
 summary (lmer.dat)
 
-#Fixed effects:
-#              Estimate Std. Error         df t value Pr(>|t|)    
-#(Intercept) -1.411e+00  3.303e-02  6.970e+01 -42.712   <2e-16 ***
-#trial.z     -2.744e-03  6.509e-03  1.528e+03  -0.422    0.673 
-
-# Note: not significant.
-
+# Poly (polynomial transformation) Trial order.
 lmer.dat1 <- lmer(RT ~ poly(TrialOrder, 2) + (1|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat1)
 
-#Fixed effects:
-#                       Estimate Std. Error         df t value Pr(>|t|)    
-#(Intercept)            -1.41090    0.03312   69.50000 -42.602  < 2e-16 ***
-#poly(TrialOrder, 2)1   -0.11370    0.26238 1526.80000  -0.433  0.66482    
-#poly(TrialOrder, 2)2    0.72977    0.26288 1528.40000   2.776  0.00557 ** 
-
-# I set REML = FALSE, because the models differ in fixed effects.
+# Testing which model is better. I set REML = FALSE, because the models differ in fixed effects.
 lmer.dat.a=update(lmer.dat, REML=FALSE)
 lmer.dat1.a=update(lmer.dat1, REML=FALSE)
 
@@ -502,11 +493,13 @@ anova(lmer.dat.a,lmer.dat1.a)
 #lmer.dat.a   5 504.21 531.20 -247.10   494.21                            
 #lmer.dat1.a  6 498.52 530.91 -243.26   486.52 7.6902      1   0.005552 **
 
-# Note: The second model is better, the one with POLY function of TrialOrder.
+### Note: The second model is better, the one with POLY function of TrialOrder (AIC, BIC, logLik).
 
 # ------------------------
-################ Embbeding of other predictors in LMER model.
 
+######################### OTHER FIXED EFFECTS
+
+# I will include predictors (factor and co-variables) one by one.
 lmer.dat2 <- lmer(RT ~ poly(TrialOrder,2) + SuffixAmbiguity + (1|Subject) +(1|TrialNumber), data=dat)
 summary (lmer.dat2)
 
@@ -516,197 +509,93 @@ summary (lmer.dat3)
 lmer.dat4 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + flem.z + SuffixAmbiguity + (1|Subject) +(1|TrialNumber), data=dat)
 summary (lmer.dat4)
 
+# Model with all predictors.
 lmer.dat5 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat5)
+
+# Random effects:
+# Groups      Name        Variance Std.Dev.
+# TrialNumber (Intercept) 0.007438 0.08624 
+# Subject     (Intercept) 0.037281 0.19308 
+# Residual                0.066547 0.25797 
+# Number of obs: 1633, groups:  TrialNumber, 74; Subject, 46
+#
+# Fixed effects:
+#                             Estimate Std. Error         df t value Pr(>|t|)
+# (Intercept)                -1.413e+00  3.296e-02  6.810e+01 -42.858  < 2e-16
+# poly(TrialOrder, 2)1       -1.520e-01  2.618e-01  1.538e+03  -0.581 0.561644
+# poly(TrialOrder, 2)2        7.289e-01  2.622e-01  1.542e+03   2.780 0.005507
+# nlen.z                      4.263e-02  1.211e-02  6.720e+01   3.521 0.000776
+# sprod.z                     1.021e-02  1.273e-02  6.640e+01   0.802 0.425323
+# flem.z                     -9.784e-02  1.323e-02  6.790e+01  -7.393 2.79e-10
+# SuffixAmbiguityunambiguous -2.994e-03  2.633e-02  6.660e+01  -0.114 0.909798
+#                              
+# (Intercept)                ***
+# poly(TrialOrder, 2)1          
+# poly(TrialOrder, 2)2       ** 
+# nlen.z                     ***
+# sprod.z                       
+# flem.z                     ***
+# SuffixAmbiguityunambiguous    
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 # I will check the interactions between predictors.
 lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + flem.z + sprod.z*SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat6)
 
-#Fixed effects:
-#                                     Estimate Std. Error         df t value
-#(Intercept)                        -1.411e+00  3.384e-02  7.320e+01 -41.685
-#poly(TrialOrder, 2)1               -1.524e-01  2.619e-01  1.537e+03  -0.582
-#poly(TrialOrder, 2)2                7.280e-01  2.622e-01  1.541e+03   2.776
-#nlen.z                              4.218e-02  1.229e-02  6.640e+01   3.432
-#flem.z                             -9.830e-02  1.342e-02  6.680e+01  -7.326
-#sprod.z                            -2.225e-03  4.576e-02  6.400e+01  -0.049
-#SuffixAmbiguityunambiguous         -4.932e-03  2.737e-02  6.530e+01  -0.180
-#sprod.z:SuffixAmbiguityunambiguous  1.354e-02  4.781e-02  6.400e+01   0.283
-#                                   Pr(>|t|)    
-#(Intercept)                         < 2e-16 ***
-#poly(TrialOrder, 2)1                0.56066    
-#poly(TrialOrder, 2)2                0.00557 ** 
-#nlen.z                              0.00104 ** 
-#flem.z                             3.99e-10 ***
-#sprod.z                             0.96137    
-#SuffixAmbiguityunambiguous          0.85757    
-#sprod.z:SuffixAmbiguityunambiguous  0.77792
-
 lmer.dat5.a=update(lmer.dat5, REML=FALSE)
 lmer.dat6.a=update(lmer.dat6, REML=FALSE)
 
 anova(lmer.dat5.a,lmer.dat6.a)
 
-#lmer.dat5.a: RT ~ poly(TrialOrder, 2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + 
-#lmer.dat5.a:     (1 | Subject) + (1 | TrialNumber)
-#lmer.dat6.a: RT ~ poly(TrialOrder, 2) + nlen.z + flem.z + sprod.z * SuffixAmbiguity + 
-#lmer.dat6.a:     (1 | Subject) + (1 | TrialNumber)
-#            Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)
-#lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
-#lmer.dat6.a 11 453.04 512.42 -215.52   431.04 0.0877      1     0.7672
-
-# Note: The first model is better.
+### Note: The first model is better, the one without interaction.
 
 # ------
-# I will check the interactions between some other predictors.
-lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z*SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat6)
-
-#Fixed effects:
-#                                    Estimate Std. Error         df t value
-#(Intercept)                       -1.408e+00  3.329e-02  7.000e+01 -42.299
-#poly(TrialOrder, 2)1              -1.563e-01  2.619e-01  1.537e+03  -0.597
-#poly(TrialOrder, 2)2               7.292e-01  2.622e-01  1.542e+03   2.781
-#nlen.z                             4.079e-02  1.226e-02  6.630e+01   3.328
-#sprod.z                            6.449e-03  1.331e-02  6.520e+01   0.484
-#flem.z                            -1.118e-01  1.955e-02  6.810e+01  -5.720
-#SuffixAmbiguityunambiguous        -2.591e-03  2.634e-02  6.560e+01  -0.098
-#flem.z:SuffixAmbiguityunambiguous  2.624e-02  2.700e-02  6.710e+01   0.972
-#                                  Pr(>|t|)    
-#(Intercept)                        < 2e-16 ***
-#poly(TrialOrder, 2)1               0.55059    
-#poly(TrialOrder, 2)2               0.00548 ** 
-#nlen.z                             0.00143 ** 
-#sprod.z                            0.62966    
-#flem.z                            2.59e-07 ***
-#SuffixAmbiguityunambiguous         0.92196    
-#flem.z:SuffixAmbiguityunambiguous  0.33462 
-
-lmer.dat5.a=update(lmer.dat5, REML=FALSE)
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-
-anova(lmer.dat5.a,lmer.dat6.a)
-
-#lmer.dat5.a: RT ~ poly(TrialOrder, 2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + 
-#lmer.dat5.a:     (1 | Subject) + (1 | TrialNumber)
-#lmer.dat6.a: RT ~ poly(TrialOrder, 2) + nlen.z + sprod.z + flem.z * SuffixAmbiguity + 
-#lmer.dat6.a:     (1 | Subject) + (1 | TrialNumber)
-#            Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)
-#lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
-#lmer.dat6.a 11 452.11 511.49 -215.06   430.11 1.0101      1     0.3149
-
-# Note: The first model is better, again.
-
-# ------
-# I will check the interactions between other predictors, again.
-lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + sprod.z + flem.z + nlen.z*SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat6)
-
-#Fixed effects:
-#                                    Estimate Std. Error         df t value
-#(Intercept)                       -1.415e+00  3.306e-02  6.870e+01 -42.791
-#poly(TrialOrder, 2)1              -1.463e-01  2.619e-01  1.536e+03  -0.559
-#poly(TrialOrder, 2)2               7.273e-01  2.622e-01  1.541e+03   2.774
-#sprod.z                            9.886e-03  1.277e-02  6.550e+01   0.774
-#flem.z                            -9.927e-02  1.337e-02  6.700e+01  -7.423
-#nlen.z                             2.940e-02  1.978e-02  6.510e+01   1.486
-#SuffixAmbiguityunambiguous        -3.578e-03  2.641e-02  6.570e+01  -0.136
-#nlen.z:SuffixAmbiguityunambiguous  2.138e-02  2.525e-02  6.600e+01   0.847
-#                                  Pr(>|t|)    
-#(Intercept)                        < 2e-16 ***
-#poly(TrialOrder, 2)1               0.57654    
-#poly(TrialOrder, 2)2               0.00561 ** 
-#sprod.z                            0.44151    
-#flem.z                            2.64e-10 ***
-#nlen.z                             0.14205    
-#SuffixAmbiguityunambiguous         0.89262    
-#nlen.z:SuffixAmbiguityunambiguous  0.40018 
-
-lmer.dat5.a=update(lmer.dat5, REML=FALSE)
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-
-anova(lmer.dat5.a,lmer.dat6.a)
-
-#lmer.dat5.a: RT ~ poly(TrialOrder, 2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + 
-#lmer.dat5.a:     (1 | Subject) + (1 | TrialNumber)
-#lmer.dat6.a: RT ~ poly(TrialOrder, 2) + sprod.z + flem.z + nlen.z * SuffixAmbiguity + 
-#lmer.dat6.a:     (1 | Subject) + (1 | TrialNumber)
-#            Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)
-#lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
-#lmer.dat6.a 11 452.36 511.74 -215.18   430.36 0.7659      1     0.3815
-
-# Note: The first model is better, again.
-
-# ------
-# And again ...
-lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z*sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat6)
-
-#Fixed effects:
-#                             Estimate Std. Error         df t value Pr(>|t|)
-#(Intercept)                -1.419e+00  3.315e-02  6.930e+01 -42.794  < 2e-16
-#poly(TrialOrder, 2)1       -1.469e-01  2.618e-01  1.537e+03  -0.561  0.57495
-#poly(TrialOrder, 2)2        7.281e-01  2.622e-01  1.542e+03   2.777  0.00555
-#nlen.z                      3.637e-02  1.277e-02  6.590e+01   2.847  0.00588
-#sprod.z                     3.431e-02  2.087e-02  6.540e+01   1.644  0.10493
-#flem.z                     -1.026e-01  1.355e-02  6.750e+01  -7.574 1.36e-10
-#SuffixAmbiguityunambiguous  8.599e-03  2.733e-02  6.550e+01   0.315  0.75406
-#nlen.z:sprod.z             -2.677e-02  1.844e-02  6.520e+01  -1.452  0.15140
-#                              
-#(Intercept)                ***
-#poly(TrialOrder, 2)1          
-#poly(TrialOrder, 2)2       ** 
-#nlen.z                     ** 
-#sprod.z                       
-#flem.z                     ***
-#SuffixAmbiguityunambiguous    
-#nlen.z:sprod.z              
-
-lmer.dat5.a=update(lmer.dat5, REML=FALSE)
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-
-anova(lmer.dat5.a,lmer.dat6.a)
-
-#lmer.dat5.a: RT ~ poly(TrialOrder, 2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + 
-#lmer.dat5.a:     (1 | Subject) + (1 | TrialNumber)
-#lmer.dat6.a: RT ~ poly(TrialOrder, 2) + nlen.z * sprod.z + flem.z + SuffixAmbiguity + 
-#lmer.dat6.a:     (1 | Subject) + (1 | TrialNumber)
-#            Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)
-#lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
-#lmer.dat6.a 11 450.89 510.27 -214.45   428.89 2.2315      1     0.1352
-
-# Note: The second model is a bit better, but having in mind the fact that this interaction is not stat.sig. (so, the advantage of this model is not interpretable) we will continue with LMER model 5. 
-
-# ------
-# I will check the interactions between other predictors, last time.
-lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z*flem.z + sprod.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
+# I will check the interactions between other predictors.
+lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z*SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat7)
-
-#Fixed effects:
-#                             Estimate Std. Error         df t value Pr(>|t|)
-#(Intercept)                -1.414e+00  3.310e-02  6.890e+01 -42.718  < 2e-16
-#poly(TrialOrder, 2)1       -1.491e-01  2.619e-01  1.536e+03  -0.569  0.56927
-#poly(TrialOrder, 2)2        7.286e-01  2.622e-01  1.541e+03   2.779  0.00553
-#nlen.z                      4.032e-02  1.301e-02  6.500e+01   3.100  0.00286
-#flem.z                     -9.859e-02  1.339e-02  6.690e+01  -7.365 3.37e-10
-#sprod.z                     1.101e-02  1.290e-02  6.530e+01   0.854  0.39644
-#SuffixAmbiguityunambiguous -5.816e-04  2.691e-02  6.550e+01  -0.022  0.98282
-#nlen.z:flem.z              -6.775e-03  1.346e-02  6.760e+01  -0.503  0.61649
-#                              
-#(Intercept)                ***
-#poly(TrialOrder, 2)1          
-#poly(TrialOrder, 2)2       ** 
-#nlen.z                     ** 
-#flem.z                     ***
-#sprod.z                       
-#SuffixAmbiguityunambiguous    
-#nlen.z:flem.z          
 
 lmer.dat5.a=update(lmer.dat5, REML=FALSE)
 lmer.dat7.a=update(lmer.dat7, REML=FALSE)
 
 anova(lmer.dat5.a,lmer.dat7.a)
+
+### Note: The first model is better, again.
+
+# ------
+
+lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + sprod.z + flem.z + nlen.z*SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat8)
+
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat8.a=update(lmer.dat8, REML=FALSE)
+
+anova(lmer.dat5.a,lmer.dat8.a)
+
+### Note: The first model is better, again.
+
+# ------
+# New LMER model with different interaction.
+lmer.dat9 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z*sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat9)
+          
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat9.a=update(lmer.dat9, REML=FALSE)
+
+anova(lmer.dat5.a,lmer.dat9.a)
+
+# Note: The second model is a bit better, but having in mind the fact that this interaction is not stat.sig. we will continue with LMER model 5. 
+
+# ------
+# And, again.
+lmer.dat10 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z*flem.z + sprod.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat10)
+
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat10.a=update(lmer.dat10, REML=FALSE)
+
+anova(lmer.dat5.a,lmer.dat10.a)
 
 #lmer.dat5.a: RT ~ poly(TrialOrder, 2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + 
 #lmer.dat5.a:     (1 | Subject) + (1 | TrialNumber)
@@ -716,14 +605,14 @@ anova(lmer.dat5.a,lmer.dat7.a)
 #lmer.dat5.a 10 451.12 505.11 -215.56   431.12                         
 #lmer.dat7.a 11 452.85 512.23 -215.43   430.85 0.2735      1      0.601
 
-# Note: The first model is better. 
+### Note: The first model is better, the one without interactions.
 
-# Final note: lmer5 is the best model so far, but we will name it lmer6.
+### Final note: lmer5 is the best model so far, but we will name it lmer6.
 
 # ----
 # The best model so far.
-lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat6)
+lmer.dat5 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat5)
 
 #Random effects:
 # Groups      Name        Variance Std.Dev.
@@ -751,44 +640,46 @@ summary (lmer.dat6)
 #SuffixAmbiguityunambiguous    
 
 # -------------------------------------------------
+
 ############################# Is it better with POLY function?
 
 lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + poly(nlen, 2)+ sprod.z + flem.z + SuffixAmbiguity + (1|Subject) +(1|TrialNumber), data=dat)
 summary (lmer.dat7)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
 lmer.dat7.a=update(lmer.dat7, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat7.a)
+anova(lmer.dat5.a,lmer.dat7.a)
 
-# Better without poly.
+# The better model is without poly.
 
-lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + poly(sprod, 2) + flem.z + SuffixAmbiguity + (1|Subject) +(1|TrialNumber), data=dat)
-summary (lmer.dat7)
+lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + poly(sprod, 2) + flem.z + SuffixAmbiguity + (1|Subject) +(1|TrialNumber), data=dat)
+summary (lmer.dat8)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat7.a=update(lmer.dat7, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat8.a=update(lmer.dat8, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat7.a)
+anova(lmer.dat5.a,lmer.dat8.a)
 
-# Better without poly.
+# The better model is without poly.
 
-lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + poly(flem, 2) + SuffixAmbiguity + (1|Subject) +(1|TrialNumber), data=dat)
-summary (lmer.dat7)
+lmer.dat9 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + poly(flem, 2) + SuffixAmbiguity + (1|Subject) +(1|TrialNumber), data=dat)
+summary (lmer.dat9)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat7.a=update(lmer.dat7, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat9.a=update(lmer.dat9, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat7.a)
+anova(lmer.dat5.a,lmer.dat9.a)
 
-# Parameters are not consistent, so we will continue without poly, because we know that we have outlier value in LemmaFrequency, which deviate destribution.
+# Parameters are not consistent, so we will continue without poly, because we know that this variable is the problematic one.
 
 # -----------------------------------------------
 # ---------------------------
-################## Best LMER model so far (with -nje suffix)!
 
-lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat6)
+################## The best LMER model so far (with -nje suffix)!
+
+lmer.dat5 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat5)
 
 #Random effects:
 # Groups      Name        Variance Std.Dev.
@@ -819,63 +710,61 @@ summary (lmer.dat6)
 
 #################### By-participant random slope adjustments.
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat6)
 
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
 lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat8.a=update(lmer.dat8, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat8.a)
+anova(lmer.dat5.a,lmer.dat6.a)
 
-# Better with.
-
+# The better model is the model with TrialOrder random slope adjustments.
 # --------------------------
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat7)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat8.a=update(lmer.dat8, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat7.a=update(lmer.dat7, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat8.a)
+anova(lmer.dat5.a,lmer.dat7.a)
 
-# Better with.
-
+# The better model is the model with nlen.z random slope adjustments.
 # --------------------------
 
+# Model with both random slope adjustments (Trial order and Noun length).
 lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
 summary (lmer.dat8)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
 lmer.dat8.a=update(lmer.dat8, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat8.a)
+anova(lmer.dat5.a,lmer.dat8.a)
 
 # Definitely, better with this two slope adjustments.
+# ------------------------
+
+lmer.dat9 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+sprod.z|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat9)
+
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat9.a=update(lmer.dat9, REML=FALSE)
+
+anova(lmer.dat5.a,lmer.dat9.a)
+
+# The better model is without this effect.
 
 # ------------------------
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+sprod.z|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat10 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+flem.z|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat10)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat8.a=update(lmer.dat8, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat10.a=update(lmer.dat10, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat8.a)
+anova(lmer.dat5.a,lmer.dat10.a)
 
-# Better without.
-
-# ------------------------
-
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+flem.z|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
-
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat8.a=update(lmer.dat8, REML=FALSE)
-
-anova(lmer.dat6.a,lmer.dat8.a)
-
-# Better without.
+# The better model is without this effect.
 
 # ----------------------------
 # ---------------------------------------------
@@ -883,25 +772,25 @@ anova(lmer.dat6.a,lmer.dat8.a)
 
 #################### By-stimulus random slope adjustments.
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+poly(TrialOrder, 2)|TrialNumber) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+poly(TrialOrder, 2)|TrialNumber) + (1|TrialNumber), data=dat)
+summary (lmer.dat6)
 
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
 lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat8.a=update(lmer.dat8, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat8.a)
+anova(lmer.dat5.a,lmer.dat6.a)
 
 # Better without.
 
 # --------------------------
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z|TrialNumber) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat7 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z|TrialNumber) + (1|TrialNumber), data=dat)
+summary (lmer.dat7)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat8.a=update(lmer.dat8, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat7.a=update(lmer.dat7, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat8.a)
+anova(lmer.dat5.a,lmer.dat7.a)
 
 # Better without.
 
@@ -910,32 +799,31 @@ anova(lmer.dat6.a,lmer.dat8.a)
 lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+sprod.z|TrialNumber) + (1|TrialNumber), data=dat)
 summary (lmer.dat8)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
 lmer.dat8.a=update(lmer.dat8, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat8.a)
+anova(lmer.dat5.a,lmer.dat8.a)
 
 # Better without.
 
 # ------------------------
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+flem.z|TrialNumber) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat9 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+flem.z|TrialNumber) + (1|TrialNumber), data=dat)
+summary (lmer.dat9)
 
-lmer.dat6.a=update(lmer.dat6, REML=FALSE)
-lmer.dat8.a=update(lmer.dat8, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat9.a=update(lmer.dat9, REML=FALSE)
 
-anova(lmer.dat6.a,lmer.dat8.a)
+anova(lmer.dat5.a,lmer.dat9.a)
 
 # Better without.
 
 ---------
 
-########################## LMER MODEL #######
-################### WITH -NJE #################
+########################## The best LMER model so far (with -nje suffix) #######
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat5 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat5)
 
 # ----------------------------
 
@@ -963,8 +851,8 @@ summary (lmer.dat8)
 # ---------------------------
 
 # I will check interaction between the random segment and random slope adjustments of the predictors NounLength and TrialOrder for different subjects.
-lmer.dat9 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat9)
+lmer.dat6 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (1+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat6)
 
 #Random effects:
 # Groups      Name                 Variance Std.Dev. Corr             
@@ -987,17 +875,18 @@ summary (lmer.dat9)
 #flem.z                     -0.096673   0.013224 67.750000  -7.311 3.97e-10 ***
 #SuffixAmbiguityunambiguous -0.003022   0.026289 66.290000  -0.115  0.90883 
 
-lmer.dat8.a=update(lmer.dat8, REML=FALSE)
-lmer.dat9.a=update(lmer.dat9, REML=FALSE)
+lmer.dat5.a=update(lmer.dat5, REML=FALSE)
+lmer.dat6.a=update(lmer.dat6, REML=FALSE)
 
-anova(lmer.dat8.a,lmer.dat9.a)
+anova(lmer.dat5.a,lmer.dat6.a)
 
 # The first model is better, and it is much more interpretable.
 
--------
+# ---------------------
+# ---------------------------
 
 # How much does any individual (in this model) differ from the population?
-ranef(lmer.dat8)$Subject
+ranef(lmer.dat5)$Subject
 
 #          nlen.z poly(TrialOrder, 2)1 poly(TrialOrder, 2)2  (Intercept)
 #s1  -0.008349068          -1.23931557          -0.90258524 -0.147470518
@@ -1051,9 +940,9 @@ ranef(lmer.dat8)$Subject
 # -----------------------
 
 # I will call this "fake bootstrapping", because I have a small amount of data, and it is not posible to do a real bootstrapping.
-confint(lmer.dat8)
+confint(lmer.dat5)
 
-                                 2.5 %      97.5 %
+#                                 2.5 %      97.5 %
 #.sig01                      0.06531539  0.10517880
 #.sig02                      0.02027102  0.05727791
 #.sig03                     -0.84718371  0.33720160
@@ -1072,40 +961,39 @@ confint(lmer.dat8)
 #SuffixAmbiguityunambiguous -0.05341506  0.04817037
 
 par(mfrow=c(2,3))
-plot(fitted(lmer.dat8),residuals(lmer.dat8))
-plot(fitted(lmer.dat8),scale(residuals(lmer.dat8)))
-qqnorm(residuals(lmer.dat8), main=" ")
-qqline(residuals(lmer.dat8))
+plot(fitted(lmer.dat5),residuals(lmer.dat5))
+plot(fitted(lmer.dat5),scale(residuals(lmer.dat5)))
+qqnorm(residuals(lmer.dat5), main=" ")
+qqline(residuals(lmer.dat5))
 par(mfrow=c(1,1))
 
-b1=bootMer(lmer.dat8, FUN = function(x) as.numeric(logLik(x)), nsim = 100)
+b1=bootMer(lmer.dat5, FUN = function(x) as.numeric(logLik(x)), nsim = 100)
 
 head(as.data.frame(b1))
 
-#        V1
-#1 -228.4669
-#2 -243.8528
-#3 -230.7973
-#4 -253.1006
-#5 -216.7248
-#6 -219.8914
-
-plot(b1$t)
+#         V1
+#1 -226.2625
+#2 -258.4306
+#3 -215.0958
+#4 -217.6790
+#5 -220.0667
+#6 -195.1272
+#plot(b1$t)
 
 # -------------
 # ------------------------
 
-# Model criticism (Baayen & Milin, 2010; Baayen, 2008).
+############################## Model criticism (Baayen & Milin, 2010; Baayen, 2008).
 
 dat$SuffixAmbiguity <- relevel(dat$SuffixAmbiguity, ref = "unambiguous")
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat5 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat5)
 
-lmer.dat8.a <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat, subset=abs(scale(resid(lmer.dat8)))<2.5)
-summary (lmer.dat8.a)
+lmer.dat5.a <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat, subset=abs(scale(resid(lmer.dat5)))<2.5)
+summary (lmer.dat5.a)
 
-#Random effects:
+# Random effects:
 # Groups      Name                 Variance Std.Dev. Corr       
 # TrialNumber (Intercept)          0.008013 0.08951             
 # Subject     nlen.z               0.001966 0.04434             
@@ -1113,33 +1001,36 @@ summary (lmer.dat8.a)
 #             poly(TrialOrder, 2)2 0.990665 0.99532   0.25  0.18
 # Subject.1   (Intercept)          0.037935 0.19477             
 # Residual                         0.056044 0.23674             
-#Number of obs: 1614, groups:  TrialNumber, 74; Subject, 46
+# Number of obs: 1614, groups:  TrialNumber, 74; Subject, 46
 #
-#Fixed effects:
+# Fixed effects:
 #                          Estimate Std. Error        df t value Pr(>|t|)    
-#(Intercept)              -1.419178   0.034501 76.390000 -41.134  < 2e-16 ***
-#poly(TrialOrder, 2)1     -0.326458   0.344602 43.680000  -0.947  0.34867    
-#poly(TrialOrder, 2)2      0.565406   0.286635 42.960000   1.973  0.05500 .  
-#nlen.z                    0.043252   0.013845 77.810000   3.124  0.00251 ** 
-#sprod.z                   0.004897   0.012859 66.330000   0.381  0.70456    
-#flem.z                   -0.098061   0.013347 67.380000  -7.347 3.51e-10 ***
-#SuffixAmbiguityambiguous  0.003385   0.026560 66.130000   0.127  0.89897    
-
+# (Intercept)              -1.419178   0.034501 76.390000 -41.134  < 2e-16 ***
+# poly(TrialOrder, 2)1     -0.326458   0.344602 43.680000  -0.947  0.34867    
+# poly(TrialOrder, 2)2      0.565406   0.286635 42.960000   1.973  0.05500 .  
+# nlen.z                    0.043252   0.013845 77.810000   3.124  0.00251 ** 
+# sprod.z                   0.004897   0.012859 66.330000   0.381  0.70456    
+# flem.z                   -0.098061   0.013347 67.380000  -7.347 3.51e-10 ***
+# SuffixAmbiguityambiguous  0.003385   0.026560 66.130000   0.127  0.89897    
+# ---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+ 
 # ------------------
 # ------------------------------------
-################# Same model, but without -nje suffix (outlier) #######################
+
+################# The same model, but without -nje suffix (outlier) #######################
 
 dat1=dat[dat$SuffixFrequency<10000,]
 
-dat1$SuffixAmbiguity <- relevel(dat1$SuffixAmbiguity, ref = "unambiguous")
+dat$SuffixAmbiguity <- relevel(dat$SuffixAmbiguity, ref = "unambiguous")
 
-lmer.dat8 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
-summary (lmer.dat8)
+lmer.dat5 <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat)
+summary (lmer.dat5)
 
-lmer.dat8.a <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat, subset=abs(scale(resid(lmer.dat8)))<2.5)
-summary (lmer.dat8.a)
+lmer.dat5.a <- lmer(RT ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat, subset=abs(scale(resid(lmer.dat5)))<2.5)
+summary (lmer.dat5.a)
 
-#Random effects:
+# Random effects:
 # Groups      Name                 Variance Std.Dev. Corr       
 # TrialNumber (Intercept)          0.008013 0.08951             
 # Subject     nlen.z               0.001966 0.04434             
@@ -1147,25 +1038,28 @@ summary (lmer.dat8.a)
 #             poly(TrialOrder, 2)2 0.990665 0.99532   0.25  0.18
 # Subject.1   (Intercept)          0.037935 0.19477             
 # Residual                         0.056044 0.23674             
-#Number of obs: 1614, groups:  TrialNumber, 74; Subject, 46
+# Number of obs: 1614, groups:  TrialNumber, 74; Subject, 46
 #
-#Fixed effects:
+# Fixed effects:
 #                          Estimate Std. Error        df t value Pr(>|t|)    
-#(Intercept)              -1.419178   0.034501 76.390000 -41.134  < 2e-16 ***
-#poly(TrialOrder, 2)1     -0.326458   0.344602 43.680000  -0.947  0.34867    
-#poly(TrialOrder, 2)2      0.565406   0.286635 42.960000   1.973  0.05500 .  
-#nlen.z                    0.043252   0.013845 77.810000   3.124  0.00251 ** 
-#sprod.z                   0.004897   0.012859 66.330000   0.381  0.70456    
-#flem.z                   -0.098061   0.013347 67.380000  -7.347 3.51e-10 ***
-#SuffixAmbiguityambiguous  0.003385   0.026560 66.130000   0.127  0.89897 
+# (Intercept)              -1.419178   0.034501 76.390000 -41.134  < 2e-16 ***
+# poly(TrialOrder, 2)1     -0.326458   0.344602 43.680000  -0.947  0.34867    
+# poly(TrialOrder, 2)2      0.565406   0.286635 42.960000   1.973  0.05500 .  
+# nlen.z                    0.043252   0.013845 77.810000   3.124  0.00251 ** 
+# sprod.z                   0.004897   0.012859 66.330000   0.381  0.70456    
+# flem.z                   -0.098061   0.013347 67.380000  -7.347 3.51e-10 ***
+# SuffixAmbiguityambiguous  0.003385   0.026560 66.130000   0.127  0.89897 
 
 # ------------------
 # -------------------------------- VIZUALIZATION OF FINAL RESULTS!
 # ------------------
+
 # SuffixAmbiguity effect.
 g1<-ggplot(data=dat, aes(x=SuffixAmbiguity, y=RT)) + 
     geom_bar(stat="identity", fill="darkred", colour="darkred")
 g1
+
+### Note: The variables have been transformed, just be careful when interpreting the results.
            
 # ------------
 # NounLength effect.           
@@ -1191,4 +1085,4 @@ g4<-ggplot(data=dat, aes(x=sprod.z, y=RT)) +
              color="darkred", fill="gray")
 g4
 
-################## The end!
+################## The end! :-)
