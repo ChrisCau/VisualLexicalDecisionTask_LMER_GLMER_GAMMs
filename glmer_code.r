@@ -32,22 +32,20 @@ colnames(dat)
 # [16] "SuffixProductivity"
 
 # ------------------
-# -------------------------------- PREPARING DATA FOR STATISTICAL ANALYSIS!
+# -------------------------------- PRE-PROCESSING OF RAW DATA!
 # ------------------
 
-# This part is almost the same as in the process of conducting LMER analysis, I will skip some parts.
+# This part is almost the same as in the LMER analysis, I will skip some parts, and you have the entire code in the LMER .txt file.
 
 # I will skip sorting part, because I work now with different measure (Accuracy), so I need all answers.
 
 # -----------------------------------------
 
-# Furtermore, I will not create subset, this parts of analysis are the same as in previous LMER analysis.
+# Furtermore, I will not create subset, this part of the analysis is the same as in the LMER analysis.
 
 # ______
 # _______________________________________
 # __________________________________________________________
-
-# I will not delete errors, I am working with them.
 
 # Visual inspection of data (RTs).
 par(mfrow=c(2,2))
@@ -94,7 +92,7 @@ table(dat$TrialNumber)
 # __________________________________________________________
 # ________________________________________________________________
 
-# I will skip this step (Visualization of continuous predictors), because it is the same as in LMER analysis.
+# I will skip this step (Visualization of continuous predictors), because it is the same as in the LMER analysis.
 
 # __________________________________________________________
 # ____________________________________________________________
@@ -128,7 +126,7 @@ collin.fnc(dat[,c("flem.z","nlen.z","fsuf.z","slen.z","sprod.z")])$cnumber
 collin.fnc(dat[,c("flem.z","nlen.z","sprod.z")])$cnumber
 # 1.427498
 
-# Note: I exscluded SuffixFrequency and SuffixLength.
+### Note: I exscluded SuffixFrequency and SuffixLength.
 
 # Visualization of multicolinearity (3 predictors).
 postscript("isidora.pairscor1.ps", width=16, height=16,paper="special",horizontal=FALSE,onefile=FALSE)
@@ -147,7 +145,7 @@ dev.off()
 # ____________________________________________________________
 
 # ------------------
-# -------------------------------- LMER ANALYSIS!
+# -------------------------------- GLMER ANALYSIS!
 # ------------------
 
 # ________________________
@@ -156,8 +154,8 @@ dev.off()
 
 ################################################################# GLMER: Generalized Linear Mixed-Effects Regression!
 
-# Note: I will take the final LMER model, and I will change all parameters that need to be changed to become GLMER model.
-# Note2: Without -nje, and without Model Criticism.
+### Note: I will take the final LMER model, and I will change all parameters that need to be changed to become GLMER model (because, we are using the same data, the same predictors etc.).
+### Note2: Without -nje, and without Model Criticism (because, we are now using Accuracy, not RTs).
 
 dat1=dat[dat$SuffixFrequency<10000,]
 
@@ -166,24 +164,25 @@ dat1$SuffixAmbiguity <- relevel(dat1$SuffixAmbiguity, ref = "unambiguous")
 glmer.dat1 <- glmer(Accuracy ~ poly(TrialOrder,2) + nlen.z + sprod.z + flem.z + SuffixAmbiguity + (1|Subject) + (0+nlen.z+poly(TrialOrder, 2)|Subject) + (1|TrialNumber), data=dat, family="binomial")
 summary (glmer.dat1)
 
-#Random effects:
+# Random effects:
 # Groups      Name                 Variance  Std.Dev. Corr       
 # TrialNumber (Intercept)            1.68124  1.2966             
 # Subject     nlen.z                 0.02778  0.1667             
 #             poly(TrialOrder, 2)1 453.17771 21.2880  -0.30      
 #             poly(TrialOrder, 2)2  83.75679  9.1519  -0.94  0.62
 # Subject.1   (Intercept)            0.21836  0.4673             
-#Number of obs: 2023, groups:  TrialNumber, 88; Subject, 46
+# Number of obs: 2023, groups:  TrialNumber, 88; Subject, 46
 #
-#Fixed effects:
+# Fixed effects:
 #                           Estimate Std. Error z value Pr(>|z|)    
-#(Intercept)                 3.50785    0.35026  10.015  < 2e-16 ***
-#poly(TrialOrder, 2)1       11.98442    5.53443   2.165   0.0304 *  
-#poly(TrialOrder, 2)2        3.79703    4.71865   0.805   0.4210    
-#nlen.z                      0.21512    0.19552   1.100   0.2712    
-#sprod.z                     0.31238    0.22679   1.377   0.1684    
-#flem.z                      1.36199    0.21073   6.463 1.03e-10 ***
-#SuffixAmbiguityunambiguous  0.08815    0.46009   0.192   0.8481
+# (Intercept)                 3.50785    0.35026  10.015  < 2e-16 ***
+# poly(TrialOrder, 2)1       11.98442    5.53443   2.165   0.0304 *  
+# poly(TrialOrder, 2)2        3.79703    4.71865   0.805   0.4210    
+# nlen.z                      0.21512    0.19552   1.100   0.2712    
+# sprod.z                     0.31238    0.22679   1.377   0.1684    
+# flem.z                      1.36199    0.21073   6.463 1.03e-10 ***
+# SuffixAmbiguityunambiguous  0.08815    0.46009   0.192   0.8481 
 
-################## Results fit with those from LMER analysis, except the LemmaFrequency effect, which is inhibitory in this analysis.
-# This analysis definitely is not sufficiently strong for our study, so we will use another (much powerfull analysis in other repository) -- GAMMs.
+### Note: Results fit with those from LMER analysis.
+
+################## The end! :-)
